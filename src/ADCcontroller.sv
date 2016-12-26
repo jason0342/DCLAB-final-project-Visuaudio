@@ -3,15 +3,15 @@ module ADCcontroller(
 	input i_ADCLRCK,
 	input i_ADCDAT,
 	input i_BCLK,
-	output [15:0] o_DATA,
+	output [31:0] o_DATA,
 	output o_done,
 	output [1:0] o_REC_STATE
 );
-	enum { S_IDLE, S_WAIT, S_WRITE, S_DONE } state_r, state_w;
+	enum { S_IDLE, S_WAIT, S_READ_R, S_READ_L, S_DONE } state_r, state_w;
 	logic pre_LRCLK_r, pre_LRCLK_w;
 	logic done_r, done_w;
 	logic [3:0] bitnum_r, bitnum_w;
-	logic [15:0] data_r, data_w;
+	logic [31:0] data_r, data_w;
 
 	assign o_done = done_r;
 	assign o_REC_STATE = state_r;
@@ -43,14 +43,27 @@ module ADCcontroller(
 
 			S_WAIT: begin
 				bitnum_w = 0;
-				if(pre_LRCLK_r == 1 && i_ADCLRCK == 0) state_w = S_WRITE;
+				if(pre_LRCLK_r == 1 && i_ADCLRCK == 0) state_w = S_READ_L;
+				if(pre_LRCLK_r == 0 && i_ADCLRCK == 1) state_w = S_READ_R;
 			end
 
-			S_WRITE: begin
+			S_READ_L: begin
 				if(i_record == 0) begin
 					state_w = S_IDLE;
 				end else begin
 					data_w[bitnum_r] = i_ADCDAT;
+					bitnum_w = bitnum_r + 1;
+					if(bitnum_r == 15) begin
+						state_w = S_WAIT;
+					end
+				end
+			end
+
+			S_READ_R: begin
+				if(i_record == 0) begin
+					state_w = S_IDLE;
+				end else begin
+					data_w[bitnum_r+16] = i_ADCDAT;
 					bitnum_w = bitnum_r + 1;
 					if(bitnum_r == 15) begin
 						state_w = S_WAIT;

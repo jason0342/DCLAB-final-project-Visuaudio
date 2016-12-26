@@ -10,8 +10,7 @@ module top(
 	input i_clk, //BCLK
 	input i_clk2, //100kHz for i2c
 	input i_rst, //SW00?
-	input i_switch, // 0:record, 1:play, SW01
-	input i_intpol, // 0 or 1 order, SW02
+	input i_switch, // enable signal
 
 	inout I2C_SDAT,
 	inout [15:0] SRAM_DQ,
@@ -31,25 +30,17 @@ module top(
 	output [2:0] o_play_state,
 );
 
-	enum { S_INIT, S_IDLE, S_PLAY, S_RECORD, S_PAUSE } state_r, state_w;
+	enum { S_INIT, S_IDLE, S_SETTING } state_r, state_w;
+	enum { FREQ1, FREQ2, FREQ3, FREQ4, FREQ5, FREQ6 } eq_freq_r, eq_freq_w;
 
 	logic startI_r, startI_w;
-	logic startR_r, startR_w;
-	logic startP_r, startP_w;
 	logic doneI, doneP, doneR;
-	logic[3:0] tmp;
-	logic[19:0] p_addr, r_addr;
-	logic[15:0] p_data, r_data;
+	logic[31:0] data_r, data_w;
 
-	assign o_timer = pos_r[19:15]; //32k ~ 2^15
 	assign o_state = state_r;
 	assign SRAM_CE_N = 0;
 	assign SRAM_UB_N = 0;
 	assign SRAM_LB_N = 0;
-	assign tmp = speed_r - 1;
-	assign SRAM_ADDR = (state_r == S_PLAY)? p_addr : r_addr;
-	assign SRAM_DQ = (state_r == S_PLAY)? 16'bz : r_data;
-	assign p_data = (state_r == S_PLAY)? SRAM_DQ : 16'bz;
 
 	I2CManager i2cM(
 		.i_start(startI_r),
@@ -89,14 +80,11 @@ module top(
 always_comb begin
 	state_w = state_r;
 	startI_w = startI_r;
-	startR_w = startR_r;
-	startP_w = startP_r;
 
 	case(state_r)
 		S_INIT: begin
 			startI_w = 1;
 			//call I2CManager
-
 			if(doneI) begin
 				state_w = S_IDLE;
 				startI_w = 0;
@@ -105,54 +93,17 @@ always_comb begin
 
 		S_IDLE: begin
 			startI_w = 0;
-			startR_w = 0;
-			startP_w = 0;
 			pos_w = 0;
-			if(i_start) begin
-				if(i_switch) begin
-					state_w = S_PLAY;
-				end else begin
-					state_w = S_RECORD;
-				end
-			end
+			
 		end
 
-		S_RECORD: begin
-			startR_w = 1;
-			pos_w = r_addr;
-			maxPos_w = r_addr;
-			// call adc
-
-			if(i_stop || doneR) begin
-				state_w = S_IDLE;
-				startR_w = 0;
-			end
+		S_SETTING: begin
+			case(eq_freq_r)
+			endcase
 		end
 
-		S_PLAY: begin
-			startP_w = 1;
-			pos_w = p_addr;
-			// call dac
-
-			if(i_start) begin
-				state_w = S_PAUSE;
-				startP_w = 0;
-			end else if(i_stop || doneP) begin
-				state_w = S_IDLE;
-				startP_w = 0;
-			end
-		end
-
-		S_PAUSE: begin
-			startP_w = 0;
-			if(i_start) begin
-				state_w = S_PLAY;
-				startP_w = 1;
-			end else if(i_stop) begin
-				state_w = S_IDLE;
-			end
-		end
 	endcase
+
 end
 
 always_ff @(posedge i_clk or posedge i_rst) begin

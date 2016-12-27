@@ -34,7 +34,8 @@ module top(
 	enum { FREQ1, FREQ2, FREQ3, FREQ4, FREQ5, FREQ6 } eq_freq_r, eq_freq_w;
 
 	logic startI_r, startI_w;
-	logic doneI, doneP, doneR;
+	logic doneI, doneP, doneR, doneDSP;
+	logic r_data, p_data;
 	logic[31:0] data_r, data_w;
 
 	assign o_state = state_r;
@@ -57,7 +58,7 @@ module top(
 		.i_ADCLRCK(ADCLRCK),
 		.i_ADCDAT(ADCDAT),
 		.i_BCLK(i_clk),
-		.o_SRAM_DATA(r_data),
+		.o_DATA(r_data),
 		.o_done(doneR),
 		.o_REC_STATE(o_rec_state)
 	);
@@ -75,6 +76,15 @@ module top(
 		.o_DACDAT(DACDAT),
 		.o_done(doneP),
 		.o_state(o_play_state)
+	);
+
+	DSP dsp0(
+		i_clk(i_clk),
+		i_rst(i_rst),
+		i_doneR(doneR),
+		i_data(r_data),
+		o_data(p_data),
+		o_done(doneDSP)
 	);
 
 always_comb begin

@@ -20,7 +20,7 @@
 //////////////////////////////////////////////////////////////////////////////////
 module qadd #(
 	//Parameterized values
-	parameter Q = 15,
+	parameter Q = 16,
 	parameter N = 32
 	)
 	(

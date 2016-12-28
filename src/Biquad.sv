@@ -30,23 +30,26 @@ module Biquad(
 
 	logic[3:0] count_r, count_w;
 	logic[31:0] g_r, g_w; // gain
-	logic[31:0] A_r, A_w; // 10^(gain/40)
+	logic[31:0] A_r, A_w; // A = 10^(gain/40)
+	logic[31:0] Ainv_r, Ainv_w; // A^-1
 
-	logic[31:0] a0_r, a2_r, b0_r, b2_r;
-	logic[31:0] a0_w, a2_w, b0_w, b2_w;
+	logic[31:0] a0inv_r, a2_r, b0_r, b2_r;
+	logic[31:0] a0inv_w, a2_w, b0_w, b2_w;
 
 	logic[8:0][31:0] tmp;
 
-	// calculate A
+	// calculate A, A^-1
 	qmul mul0(g_r, g_r, tmp[0]);
 	qmul mul1(c2, tmp[0], tmp[1]);
-	qmul mul2(c1, g_r, tmp[2]);
+	qmul mul2(c1, (g_r[31] == 0) ? g_r : ~g_r+1, tmp[2]);
 	qadd add0(c0, tmp[2], tmp[3]);
 	qadd add1(tmp[1], tmp[3], tmp[4]);
 	qmul mul3(c5, tmp[0], tmp[5]);
-	qmul mul4(c4, g_r, tmp[6]);
+	qmul mul4(c4, (g_r[31] == 0) ? ~g_r+1 : g_r, tmp[6]);
 	qadd add2(c3, tmp[6], tmp[7]);
 	qadd add3(tmp[5], tmp[7], tmp[8]);
+
+
 
 	always_comb begin
 		case(state_r)
@@ -65,10 +68,13 @@ module Biquad(
 					0: begin //calculate A
 						if(g_r == 0) begin
 							A_w = 1<<q_fp;
+							Ainv_w = 1<<q_fp;
 						end else if(g_r[31] == 0) begin
 							A_w = tmp[4];
+							Ainv_w = tmp[8];
 						end else begin
 							A_w = tmp[8];
+							Ainv_w = tmp[4];
 						end
 					end
 					1: begin

@@ -8,23 +8,24 @@ module Biquad(
 );
 
 	parameter q_fp = 15; // Q15 fixed point
+	parameter fix1 = 1<<q_fp;
 
 	parameter f0 = 100; //central freq, to be set
 	parameter fs = 32000; // sample freq
 	parameter q = 2; // Q factor
 	parameter pi = 3.1415926;
 
-	parameter int a1_r = -2 * $cos(2*pi*f0/fs) * (1<<q_fp); // 2^Q covert to fixpoint
+	parameter int a1_r = -2 * $cos(2*pi*f0/fs) * fix1; // 2^Q covert to fixpoint
 	parameter b1_r = a1_r;
-	parameter int alpha = $sin(2*pi*f0/fs) * (1<<q_fp) / (2*q);
+	parameter int alpha = $sin(2*pi*f0/fs) * fix1 / (2*q);
 
 	//coeff. for 10^(gain/40) approx. , c0 + c1x + c2x^2, c3 + c4x + c5x^2
-	parameter c0 = int'(1.0120 * (1<<q_fp));
-	parameter c1 = int'(0.0464 * (1<<q_fp));
-	parameter c2 = int'(0.0030 * (1<<q_fp));
-	parameter c3 = int'(0.9950 * (1<<q_fp));
-	parameter c4 = int'(0.0529 * (1<<q_fp));
-	parameter c5 = int'(0.00096* (1<<q_fp));
+	parameter c0 = int'(1.0120 * fix1);
+	parameter c1 = int'(0.0464 * fix1);
+	parameter c2 = int'(0.0030 * fix1);
+	parameter c3 = int'(0.9950 * fix1);
+	parameter c4 = int'(0.0529 * fix1);
+	parameter c5 = int'(0.00096* fix1);
 
 	enum{ S_WAIT, S_SET } state_r, state_w;
 
@@ -36,7 +37,10 @@ module Biquad(
 	logic[31:0] a0inv_r, a2_r, b0_r, b2_r;
 	logic[31:0] a0inv_w, a2_w, b0_w, b2_w;
 
-	logic[8:0][31:0] tmp;
+	logic[31:0] x0_r, x1_r, x2_r, y1_r, y2_r;
+	logic[31:0] x0_w, x1_w, x2_w, y1_w, y2_w;
+
+	logic[13:0][31:0] tmp;
 
 	// calculate A, A^-1
 	qmul mul0(g_r, g_r, tmp[0]);
@@ -49,9 +53,44 @@ module Biquad(
 	qadd add2(c3, tmp[6], tmp[7]);
 	qadd add3(tmp[5], tmp[7], tmp[8]);
 
+	// calculate a2, b0, b2
+	qmul mul20(alpha, A_r, tmp[9]); // alpha*A
+	qmul mul21(alpha, Ainv_r, tmp[10]); // alpha*A^-1
+	qadd add20(fix1, tmp[9], tmp[11]); // b0
+	qadd add21(fix1, ~tmp[9]+1, tmp[12]); // b2
+	qadd add22(fix1, ~tmp[10]+1, tmp[13]); // a2, a0^-1
+
+	// biquad filter
+	qmul mul30(b0_r, x0_r, tmp[14]);
+	qmul mul31(b1_r, x1_r, tmp[15]);
+	qmul mul32(b2_r, x2_r, tmp[16]);
+	qmul mul33(a1_r, y1_r, tmp[17]);
+	qmul mul34(a2_r, y2_r, tmp[18]);
+	qadd add30(tmp[14], tmp[15], tmp[19]);
+	qadd add31(tmp[17], tmp[18], tmp[20]);
+	qadd add32(tmp[16], tmp[19], tmp[21]);
+	qadd add33(tmp[21], ~tmp[20]+1, tmp[22]);
+	qmul mul35(a2_r, tmp[22], tmp[23]);
 
 
 	always_comb begin
+		state_w = state_r;
+		count_w = count_r;
+		g_w = g_r;
+		A_w = A_r;
+		Ainv_w = Ainv_r;
+		a2_w = a2_r;
+		b0_w = b0_r;
+		b2_w = b2_r;
+
+		x0_w = i_data;
+		x1_w = x0_r;
+		x2_w = x1_r;
+		y1_w = tmp[23];
+		y2_w = y1_r;
+		o_data = tmp[23];
+
+		// calculate and set coeffs
 		case(state_r)
 			S_WAIT: begin
 				if(i_set) begin
@@ -77,7 +116,15 @@ module Biquad(
 							Ainv_w = tmp[4];
 						end
 					end
-					1: begin
+					1: begin //calculate a2, b0, b2
+						b0_w = tmp[11];
+						b2_w = tmp[12];
+						a2_w = tmp[13];
+					end
+					2: begin 
+						state_w = S_WAIT;
+					end
+					default: begin
 					end
 				endcase
 				count_w = count_r + 1;
@@ -89,13 +136,31 @@ module Biquad(
 		if(i_rst) begin
 			state_r <= S_WAIT;
 			count_r <= 0;
-			A_r <= 1;
+			A_r <= fix1;
+			Ainv_r <= fix1;
 			g_r <= 0;
+			a2_r <= 0;
+			b0_r <= fix1;
+			b2_r <= 0;
+			x0_r <= 0;
+			x1_r <= 0;
+			x2_r <= 0;
+			y1_r <= 0;
+			y2_r <= 0;
 		end else begin
 			state_r <= state_w;
 			count_r <= count_w;
 			A_r <= A_w;
+			Ainv_r <= Ainv_w;
 			g_r <= g_w;
+			a2_r <= a2_w;
+			b0_r <= b0_w;
+			b2_r <= b2_w;
+			x0_r <= x0_w;
+			x1_r <= x1_w;
+			x2_r <= x2_w;
+			y1_r <= y1_w;
+			y2_r <= y2_w;
 		end
 	end
 

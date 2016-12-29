@@ -2,6 +2,7 @@ module Biquad(
 	input i_clk,
 	input i_rst,
 	input i_set,
+	input i_next,
 	input[15:0] i_gain, // 16bit signed int
 	input[31:0] i_data, // fixed point
 	output[31:0] o_data
@@ -27,7 +28,8 @@ module Biquad(
 	parameter c4 = int'(0.0529 * fix1);
 	parameter c5 = int'(0.00096* fix1);
 
-	enum{ S_WAIT, S_SET } state_r, state_w;
+	enum{ S_WAIT, S_SET } set_state_r, set_state_w;
+	enum{ S_IDLE, S_NEXT } run_state_r, run_state_w;
 
 	logic[3:0] count_r, count_w;
 	logic[31:0] g_r, g_w; // gain
@@ -40,7 +42,7 @@ module Biquad(
 	logic[31:0] x0_r, x1_r, x2_r, y1_r, y2_r;
 	logic[31:0] x0_w, x1_w, x2_w, y1_w, y2_w;
 
-	logic[13:0][31:0] tmp;
+	logic[23:0][31:0] tmp;
 
 	// calculate A, A^-1
 	qmul mul0(g_r, g_r, tmp[0]);
@@ -72,9 +74,11 @@ module Biquad(
 	qadd add33(tmp[21], ~tmp[20]+1, tmp[22]);
 	qmul mul35(a2_r, tmp[22], tmp[23]);
 
+	assign o_data = tmp[23]
 
 	always_comb begin
-		state_w = state_r;
+		set_state_w = set_state_r;
+		run_state_w = run_state_r;
 		count_w = count_r;
 		g_w = g_r;
 		A_w = A_r;
@@ -82,19 +86,35 @@ module Biquad(
 		a2_w = a2_r;
 		b0_w = b0_r;
 		b2_w = b2_r;
+		x0_w = x0_r;
+		x1_w = x1_r;
+		x2_w = x2_r;
+		y1_w = y1_r;
+		y2_w = y2_r;
 
-		x0_w = i_data;
-		x1_w = x0_r;
-		x2_w = x1_r;
-		y1_w = tmp[23];
-		y2_w = y1_r;
-		o_data = tmp[23];
+		case(run_state_r)
+			S_IDLE: begin
+				if(i_next) begin
+					run_state_w = S_NEXT;
+				end
+			end
+			S_NEXT: begin
+				if(!i_next) begin
+					x0_w = i_data;
+					x1_w = x0_r;
+					x2_w = x1_r;
+					y1_w = tmp[23];
+					y2_w = y1_r;
+					run_state_w = S_IDLE;
+				end
+			end
+		endcase
 
 		// calculate and set coeffs
-		case(state_r)
+		case(set_state_r)
 			S_WAIT: begin
 				if(i_set) begin
-					state_w = S_SET;
+					set_state_w = S_SET;
 					count_w = 0;
 					g_w[31:16+q_fp] = (i_gain[15] == 1)? '1 : '0;
 					g_w[15+q_fp:q_fp] = i_gain;
@@ -122,7 +142,7 @@ module Biquad(
 						a2_w = tmp[13];
 					end
 					2: begin 
-						state_w = S_WAIT;
+						set_state_w = S_WAIT;
 					end
 					default: begin
 					end
@@ -134,7 +154,8 @@ module Biquad(
 
 	always_ff @(posedge i_clk or posedge i_rst) begin
 		if(i_rst) begin
-			state_r <= S_WAIT;
+			set_state_r <= S_WAIT;
+			run_state_r <= S_IDLE;
 			count_r <= 0;
 			A_r <= fix1;
 			Ainv_r <= fix1;
@@ -148,7 +169,8 @@ module Biquad(
 			y1_r <= 0;
 			y2_r <= 0;
 		end else begin
-			state_r <= state_w;
+			set_state_r <= state_w;
+			run_state_r <= run_state_w;
 			count_r <= count_w;
 			A_r <= A_w;
 			Ainv_r <= Ainv_w;

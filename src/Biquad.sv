@@ -74,7 +74,7 @@ module Biquad(
 	qadd add33(tmp[21], ~tmp[20]+1, tmp[22]);
 	qmul mul35(a2_r, tmp[22], tmp[23]);
 
-	assign o_data = tmp[23]
+	assign o_data = tmp[23];
 
 	always_comb begin
 		set_state_w = set_state_r;
@@ -169,7 +169,7 @@ module Biquad(
 			y1_r <= 0;
 			y2_r <= 0;
 		end else begin
-			set_state_r <= state_w;
+			set_state_r <= set_state_w;
 			run_state_r <= run_state_w;
 			count_r <= count_w;
 			A_r <= A_w;

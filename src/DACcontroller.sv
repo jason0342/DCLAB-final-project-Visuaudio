@@ -7,7 +7,7 @@ module DACcontroller(
 	input i_BCLK,
 	input [15:0] i_DATA,
 
-	output o_DACDAT,
+	output o_DACDAT
 );
 
 	typedef enum {

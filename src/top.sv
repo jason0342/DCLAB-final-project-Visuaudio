@@ -36,8 +36,7 @@ module top(
 
 	logic startI_r, startI_w;
 	logic doneI, doneP, doneR, doneDSP;
-	logic r_data, p_data;
-	logic[31:0] data_r, data_w;
+	logic[15:0] r_data, p_data;
 	logic[2:0] band_r, band_w;
 	logic[2:0] set_band;
 	logic[nBand:0][15:0] gain_r, gain_w;
@@ -71,32 +70,30 @@ module top(
 	);
 
 	DACcontroller dac(
-		.i_play(startP_r),
-		.i_start_pos(pos_r),
-		.i_end_pos(maxPos_r),
-		.i_speed(speedtoDac),
+		.i_play(i_switch),
+		.i_valid(doneDSP),
 		.i_DACLRCK(DACLRCK),
 		.i_BCLK(i_clk),
-		.i_SRAM_DATA(p_data),
-		.o_SRAM_OE(SRAM_OE_N),
-		.o_SRAM_ADDR(p_addr),
-		.o_DACDAT(DACDAT),
-		.o_done(doneP),
-		.o_state(o_play_state)
+		.i_DATA(p_data),
+		.o_DACDAT(DACDAT)
 	);
 
 	DSP dsp0(
-		i_clk(i_clk),
-		i_rst(i_rst),
-		i_doneR(doneR),
-		i_data(r_data),
-		o_data(p_data),
-		o_done(doneDSP)
+		.i_clk(i_clk),
+		.i_rst(i_rst),
+		.i_doneR(doneR),
+		.i_data(r_data),
+		.i_gain(set_band),
+		.i_set_gain(set_gain),
+		.o_data(p_data),
+		.o_done(doneDSP)
 	);
 
 always_comb begin
 	state_w = state_r;
 	startI_w = startI_r;
+	band_w = band_r;
+	gain_w = gain_r;
 
 	case(state_r)
 		S_INIT: begin
@@ -153,21 +150,13 @@ always_ff @(posedge i_clk or posedge i_rst) begin
 	if(i_rst) begin
 		state_r <= S_INIT;
 		startI_r <= 1;
-		startP_r <= 0;
-		startR_r <= 0;
 		band_r <= 0;
-		foreach(gain_r[i]) begin
-			gain_r[i] <= 0;
-		end
+		gain_r <= '0;
 	end else begin
 		state_r <= state_w;
 		startI_r <= startI_w;
-		startP_r <= startP_w;
-		startR_r <= startR_w;
 		band_r <= band_w;
-		foreach(gain_r[i]) begin
-			gain_r[i] <= gain_w[i];
-		end
+		gain_r <= gain_w;
 	end
 end
 

@@ -7,7 +7,7 @@ module ADCcontroller(
 	output o_done,
 	output [1:0] o_REC_STATE
 );
-	enum { S_IDLE, S_WAIT, S_READ_R, S_READ_L, S_DONE } state_r, state_w;
+	enum { S_IDLE, S_WAIT, S_READ_L, S_DONE } state_r, state_w;
 	logic pre_LRCLK_r, pre_LRCLK_w;
 	logic done_r, done_w;
 	logic [3:0] bitnum_r, bitnum_w;
@@ -56,7 +56,7 @@ module ADCcontroller(
 					data_w[15 - bitnum_r] = i_ADCDAT;
 					bitnum_w = bitnum_r + 1;
 					if(bitnum_r == 15) begin
-						state_w = S_WAIT;
+						state_w = S_DONE;
 						done_w = 1;
 					end
 				end

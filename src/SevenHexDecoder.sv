@@ -2,7 +2,7 @@ module SevenHexDecoder(
 	// input [4:0] timer,
 	input [2:0] i_state,
 	input [2:0] i_band,
-	input [15:0] i_gain,
+	input [31:0] i_gain,
 	// input [1:0] speedStat,
 	// input [3:0] speed,
 	// input [1:0] iniState,
@@ -110,7 +110,7 @@ module SevenHexDecoder(
 			3: begin
 				o_s1 = D;
 				o_s0 = B;
-				case(int'(i_gain))
+				case(i_gain)
 					0: begin o_s4 = D0; end
 					1: begin o_s4 = D1; end
 					2: begin o_s4 = D2; end
@@ -124,18 +124,22 @@ module SevenHexDecoder(
 					10: begin o_s5 = D1; o_s4 = D0; end
 					11: begin o_s5 = D1; o_s4 = D1; end
 					12: begin o_s5 = D1; o_s4 = D2; end
-					-1: begin o_s5 = NE; o_s4 = D1; end
-					-2: begin o_s5 = NE; o_s4 = D2; end
-					-3: begin o_s5 = NE; o_s4 = D3; end
-					-4: begin o_s5 = NE; o_s4 = D4; end
-					-5: begin o_s5 = NE; o_s4 = D5; end
-					-6: begin o_s5 = NE; o_s4 = D6; end
-					-7: begin o_s5 = NE; o_s4 = D7; end
-					-8: begin o_s5 = NE; o_s4 = D8; end
-					-9: begin o_s5 = NE; o_s4 = D9; end
-					-10: begin o_s6 = NE; o_s5 = D1; o_s4 = D0; end
-					-11: begin o_s6 = NE; o_s5 = D1; o_s4 = D1; end
-					-12: begin o_s6 = NE; o_s5 = D1; o_s4 = D2; end
+					default: begin end
+				endcase
+				case(~i_gain+1)
+					1: begin o_s5 = NE; o_s4 = D1; end
+					2: begin o_s5 = NE; o_s4 = D2; end
+					3: begin o_s5 = NE; o_s4 = D3; end
+					4: begin o_s5 = NE; o_s4 = D4; end
+					5: begin o_s5 = NE; o_s4 = D5; end
+					6: begin o_s5 = NE; o_s4 = D6; end
+					7: begin o_s5 = NE; o_s4 = D7; end
+					8: begin o_s5 = NE; o_s4 = D8; end
+					9: begin o_s5 = NE; o_s4 = D9; end
+					10: begin o_s6 = NE; o_s5 = D1; o_s4 = D0; end
+					11: begin o_s6 = NE; o_s5 = D1; o_s4 = D1; end
+					12: begin o_s6 = NE; o_s5 = D1; o_s4 = D2; end
+					default: begin end
 				endcase
 			end
 

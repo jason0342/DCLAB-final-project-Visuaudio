@@ -5,6 +5,7 @@ module DSP(
 	input [15:0] i_data,
 	input [15:0] i_gain,
 	input [2:0] i_set_gain, // choose biquad to set gain, 0: choose none
+	input i_set_enable,
 	output[15:0] o_data,
 	output o_done
 );
@@ -17,23 +18,25 @@ module DSP(
 	logic[31:0] idat_r, idat_w, odat_r, odat_w;
 	logic[4:0] count_r, count_w;
 	logic done_r, done_w;
-	logic[4:0][31:0] tmp;
+	logic[5:0][31:0] tmp;
 	logic[15:0] odat_tmp;
 
 	assign o_done = done_r;
 	assign o_data = odat_tmp;
+	// assign o_data = i_data;
 
 	Biquad #(.f0(100))  biquad1(i_clk, i_rst, (i_set_gain == 1), i_doneR, i_gain, idat_r, tmp[0]);
 	Biquad #(.f0(200))  biquad2(i_clk, i_rst, (i_set_gain == 2), i_doneR, i_gain, tmp[0], tmp[1]);
 	Biquad #(.f0(400))  biquad3(i_clk, i_rst, (i_set_gain == 3), i_doneR, i_gain, tmp[1], tmp[2]);
 	Biquad #(.f0(800))  biquad4(i_clk, i_rst, (i_set_gain == 4), i_doneR, i_gain, tmp[2], tmp[3]);
 	Biquad #(.f0(1600)) biquad5(i_clk, i_rst, (i_set_gain == 5), i_doneR, i_gain, tmp[3], tmp[4]);
-	Biquad #(.f0(3200)) biquad6(i_clk, i_rst, (i_set_gain == 6), i_doneR, i_gain, tmp[4], odat_w);
+	Biquad #(.f0(3200)) biquad6(i_clk, i_rst, (i_set_gain == 6), i_doneR, i_gain, tmp[4], tmp[5]);
+	// Biquad #(.f0(400)) biquad0(i_clk, i_rst, (i_set_gain == 3 && i_set_enable), i_doneR, i_gain, idat_r, tmp[5]);
 
 always_comb begin
 	state_w = state_r;
 	idat_w = idat_r;
-	// odat_w = odat_r;
+	odat_w = odat_r;
 	done_w = done_r;
 	count_w = count_r;
 
@@ -64,6 +67,7 @@ always_comb begin
 			if(count_r == 31) begin	// wait biquad calculate	
 				done_w = 1;
 				state_w = S_DONE;
+				odat_w = tmp[5];
 			end
 			count_w = count_r + 1;
 		end

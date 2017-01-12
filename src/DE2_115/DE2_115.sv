@@ -137,15 +137,12 @@ module DE2_115(
 );
 	
 	logic[3:0] k_deb;
-	logic[4:0] timer0;
 	logic[2:0] state0;
-	logic[1:0] speedStat0;
-	logic[3:0] speed0;
-	logic[1:0] iniState0;
-	logic[1:0] recState0;
-	logic[2:0] playState0;
+	logic[2:0] band0;
+	logic[15:0] gain0;
+	// logic[1:0] iniState0;
+	// logic[2:0] playState0;
 	logic clk_100k;
-	logic[3:0] speedtoDac0;
 
 	altpll altpll0(
 		.altpll_0_c0_clk(AUD_XCK), // 12MHz
@@ -176,15 +173,12 @@ module DE2_115(
 	);
 
 	SevenHexDecoder sevenDec(
-		.timer(timer0),
-		.state(state0),
-		.speedStat(speedStat0),
-		.speed(speed0),
-		.iniState(iniState0),
-		.recState(recState0),
-		.playState(playState0),
-		.i_sram_data(SRAM_DQ),
-		.speedtoDac(speedtoDac0),
+		.i_state(state0),
+		.i_band(band0),
+		.i_gain(gain0),
+		// .iniState(iniState0),
+		// .recState(recState0),
+		// .playState(playState0),
 		.o_s0(HEX0),
 		.o_s1(HEX1),
 		.o_s2(HEX2),
@@ -196,8 +190,8 @@ module DE2_115(
 	);
 
 	top top0(
-		.i_start(k_deb[3]),
-		.i_stop(k_deb[2]),
+		.i_select(k_deb[3]),
+		.i_back(k_deb[2]),
 		.i_up(k_deb[1]),
 		.i_down(k_deb[0]),
 		.ADCLRCK(AUD_ADCLRCK),
@@ -207,25 +201,21 @@ module DE2_115(
 		.i_clk2(clk_100k),
 		.i_rst(SW[0]),
 		.i_switch(SW[1]),
-		.i_intpol(SW[2]),
 		.I2C_SDAT(I2C_SDAT),
-		.SRAM_DQ(SRAM_DQ),
+		// .SRAM_DQ(SRAM_DQ),
 		.I2C_SCLK(I2C_SCLK),
-		.SRAM_ADDR(SRAM_ADDR),
-		.SRAM_CE_N(SRAM_CE_N),
-		.SRAM_OE_N(SRAM_OE_N),
-		.SRAM_WE_N(SRAM_WE_N),
-		.SRAM_UB_N(SRAM_UB_N),
-		.SRAM_LB_N(SRAM_LB_N),
+		// .SRAM_ADDR(SRAM_ADDR),
+		// .SRAM_CE_N(SRAM_CE_N),
+		// .SRAM_OE_N(SRAM_OE_N),
+		// .SRAM_WE_N(SRAM_WE_N),
+		// .SRAM_UB_N(SRAM_UB_N),
+		// .SRAM_LB_N(SRAM_LB_N),
 		.DACDAT(AUD_DACDAT),
-		.o_timer(timer0),
 		.o_state(state0),
-		.o_speedStat(speedStat0),
-		.o_speed(speed0),
-		.o_ini_state(iniState0),
-		.o_rec_state(recState0),
-		.o_play_state(playState0),
-		.o_speedtoDac(speedtoDac0)
+		.o_band(band0),
+		.o_gain(gain0)
+		// .o_ini_state(iniState0),
+		// .o_play_state(playState0),
 	);
 
 endmodule

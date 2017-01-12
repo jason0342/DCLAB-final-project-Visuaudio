@@ -23,11 +23,11 @@ module top(
 	// output SRAM_UB_N,
 	// output SRAM_LB_N,
 	output DACDAT,
-	output [4:0] o_timer,
 	output [2:0] o_state,
-	output [1:0] o_ini_state,
-	output [1:0] o_rec_state,
-	output [2:0] o_play_state,
+	output [2:0] o_band,
+	output [15:0] o_gain
+	// output [1:0] o_ini_state,
+	// output [2:0] o_play_state,
 );
 
 	parameter nBand = 6;
@@ -43,6 +43,8 @@ module top(
 	logic[15:0] set_gain;
 
 	assign o_state = state_r;
+	assign o_band = band_r;
+	assign o_gain = gain_r[band_r];
 	assign set_band = band_r;
 	assign set_gain = gain_r[band_r];
 	// assign SRAM_CE_N = 0;
@@ -60,7 +62,7 @@ module top(
 	);
 
 	ADCcontroller adc(
-		.i_record(startR_r),
+		.i_record(1),
 		.i_ADCLRCK(ADCLRCK),
 		.i_ADCDAT(ADCDAT),
 		.i_BCLK(i_clk),

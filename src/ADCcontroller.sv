@@ -43,8 +43,9 @@ module ADCcontroller(
 
 			S_WAIT: begin
 				bitnum_w = 0;
+				done_w = 0;
 				if(pre_LRCLK_r == 1 && i_ADCLRCK == 0) state_w = S_READ_L;
-				if(pre_LRCLK_r == 0 && i_ADCLRCK == 1) state_w = S_READ_R;
+				// if(pre_LRCLK_r == 0 && i_ADCLRCK == 1) state_w = S_READ_R;
 			end
 
 			S_READ_L: begin
@@ -55,21 +56,22 @@ module ADCcontroller(
 					bitnum_w = bitnum_r + 1;
 					if(bitnum_r == 15) begin
 						state_w = S_WAIT;
+						done_w = 1;
 					end
 				end
 			end
 
-			S_READ_R: begin
-				if(i_record == 0) begin
-					state_w = S_IDLE;
-				end else begin
-					data_w[bitnum_r+16] = i_ADCDAT;
-					bitnum_w = bitnum_r + 1;
-					if(bitnum_r == 15) begin
-						state_w = S_WAIT;
-					end
-				end
-			end
+			// S_READ_R: begin
+			// 	if(i_record == 0) begin
+			// 		state_w = S_IDLE;
+			// 	end else begin
+			// 		data_w[bitnum_r+16] = i_ADCDAT;
+			// 		bitnum_w = bitnum_r + 1;
+			// 		if(bitnum_r == 15) begin
+			// 			state_w = S_WAIT;
+			// 		end
+			// 	end
+			// end
 
 			S_DONE: begin 
 				state_w = S_IDLE;

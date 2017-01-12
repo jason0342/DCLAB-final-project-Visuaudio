@@ -144,7 +144,7 @@ module DE2_115(
 	// logic[2:0] playState0;
 	logic clk_100k;
 
-	altpll altpll0(
+	pll altpll0(
 		.altpll_0_c0_clk(AUD_XCK), // 12MHz
 		.altpll_0_c1_clk(clk_100k), //100kHz
 		.clk_clk(CLOCK_50),

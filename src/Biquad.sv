@@ -1,3 +1,6 @@
+`define SIN(x) (x - ((x)**3)/6 + ((x)**5)/120 + ((x)**7)/5040)
+`define COS(x) (1 - ((x)**2)/2 + ((x)**4)/24 - ((x)**6)/720)
+
 module Biquad(
 	input i_clk,
 	input i_rst,
@@ -16,9 +19,9 @@ module Biquad(
 	parameter q = 2; // Q factor
 	parameter pi = 3.1415926;
 
-	parameter int a1_r = -2 * $cos(2*pi*f0/fs) * fix1; // 2^Q covert to fixpoint
+	parameter integer alpha = `SIN(2*pi*f0/fs) * fix1 / (2*q);
+	parameter integer a1_r = -2 * `COS(2*pi*f0/fs) * fix1; // 2^Q covert to fixpoint
 	parameter b1_r = a1_r;
-	parameter int alpha = $sin(2*pi*f0/fs) * fix1 / (2*q);
 
 	//coeff. for 10^(gain/40) approx. , c0 + c1x + c2x^2, c3 + c4x + c5x^2
 	parameter c0 = int'(1.0120 * fix1);

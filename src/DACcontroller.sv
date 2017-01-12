@@ -14,7 +14,7 @@ module DACcontroller(
 		S_READ,
 		S_WAIT,
 		S_WRITE_LEFT,
-		S_WRITE_RIGHT,
+		S_WRITE_RIGHT
 	} State;
 
 	State state_r, state_w;
@@ -53,24 +53,24 @@ module DACcontroller(
 			S_WAIT: begin
 				bitnum_w = 0;  // Start from first bit again
 				if(pre_LRCLK_r == 1 && i_DACLRCK == 0) begin
-					dacdat_w = data_r[bitnum_r];
+					dacdat_w = data_r[15];
 					bitnum_w = bitnum_r + 1;
 					state_w = S_WRITE_LEFT;
 				end else if(pre_LRCLK_r == 0 && i_DACLRCK == 1)	begin
-					dacdat_w = data_r[16 + bitnum_r];
+					dacdat_w = data_r[31];
 					bitnum_w = bitnum_r + 1;
 					state_w = S_WRITE_RIGHT;
 				end
 			end
 
 			S_WRITE_LEFT: begin 
-				dacdat_w = data_r[bitnum_r];
+				dacdat_w = data_r[15 - bitnum_r];
 				bitnum_w = bitnum_r + 1;
 				if(bitnum_r == 15) state_w = S_WAIT;
 			end
 
 			S_WRITE_RIGHT: begin
-				dacdat_w = data_r[16 + bitnum_r];
+				dacdat_w = data_r[31 - bitnum_r];
 				bitnum_w = bitnum_r + 1;
 				if(bitnum_r == 15) state_w = S_READ;
 			end

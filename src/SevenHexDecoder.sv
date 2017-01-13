@@ -1,8 +1,11 @@
 module SevenHexDecoder(
 	// input [4:0] timer,
 	input [2:0] i_state,
+	input [2:0] i_menu_state,
 	input [2:0] i_band,
 	input [31:0] i_gain,
+	input [2:0] i_offset,
+	input i_play_enable,
 	// input [1:0] speedStat,
 	// input [3:0] speed,
 	// input [1:0] iniState,
@@ -45,11 +48,14 @@ module SevenHexDecoder(
 	parameter H  = 7'b0001001;
 	parameter L  = 7'b1000111;
 	parameter N  = 7'b0101011;
+	parameter O  = 7'b0100011;
 	parameter P  = 7'b0001100;
+	parameter Q  = 7'b0011000;
 	parameter R  = 7'b1001110;
 	parameter S  = 7'b0010010;
+	parameter T  = 7'b1111000;
 	parameter U  = 7'b1000001;
-	parameter Y  = 7'b0011001;
+	parameter Y  = 7'b0010001;
 	parameter NE = 7'b0111111;
 	parameter DK = 7'b1111111;
 
@@ -64,14 +70,51 @@ module SevenHexDecoder(
 		o_s7 = DK;
 
 		case(i_state)
+			0: begin
+				o_s2 = D1;
+				o_s1 = N;
+				o_s0 = D1;
+
 			1: begin
-				o_s7 = D1;
-				o_s6 = D0;
-				o_s5 = L;
-				o_s4 = E;
+				if(i_play_enable) begin
+					o_s3 = P;
+					o_s2 = L;
+					o_s1 = A;
+					o_s0 = Y;
+				end else begin
+					o_s7 = D1;
+					o_s6 = D0;
+					o_s5 = L;
+					o_s4 = E;
+				end
 			end
 
 			2: begin
+				case(i_menu_state) begin
+					0: begin
+						o_s1 = E;
+						o_s0 = Q;
+					end
+
+					1: begin
+						o_s5 = O;
+						o_s4 = F;
+						o_s3 = F;
+						o_s2 = S;
+						o_s1 = E;
+						o_s0 = T;
+					end
+
+					2: begin
+						o_s4 = R;
+						o_s3 = E;
+						o_s2 = S;
+						o_s1 = E;
+						o_s0 = T;
+					end
+				endcase
+
+			3: begin
 				o_s1 = H;
 				o_s0 = D2;
 				o_s5 = D0;
@@ -107,7 +150,7 @@ module SevenHexDecoder(
 				endcase
 			end
 
-			3: begin
+			4: begin
 				o_s1 = D;
 				o_s0 = B;
 				case(i_gain)

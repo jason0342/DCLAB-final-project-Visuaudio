@@ -24,15 +24,27 @@ module top(
 	// output SRAM_LB_N,
 	output DACDAT,
 	output [2:0] o_state,
+	output [2:0] o_menu_state,
 	output [2:0] o_band,
-	output [31:0] o_gain
+	output [31:0] o_gain,
+	output [2:0] o_offset
 	// output [1:0] o_ini_state,
 	// output [2:0] o_play_state,
 );
 
 	parameter nBand = 6;
 
-	enum { S_INIT, S_IDLE, S_BAND_SEL, S_SET_GAIN } state_r, state_w;
+	enum { 
+		S_INIT,
+		S_IDLE,
+		S_MENU,
+		S_BAND_SEL,
+		S_SET_GAIN,
+		S_SET_OFFSET,
+		S_RESET
+	} state_r, state_w;
+
+	enum { S_EQ, S_OFFSET, S_RESET } state_menu_r, state_menu_w;
 
 	logic startI_r, startI_w;
 	logic doneI, doneP, doneR, doneDSP;
@@ -40,14 +52,19 @@ module top(
 	logic[2:0] band_r, band_w;
 	logic[2:0] set_band;
 	logic[nBand:0][31:0] gain_r, gain_w;
+	logic[2:0] offset_r, offset_w;
 	logic[15:0] set_gain;
 	logic set_enable_r, set_enable_w;
+	logic reset_dsp;
 
 	assign o_state = state_r;
+	assign o_menu_state = state_menu_r;
 	assign o_band = band_r;
 	assign o_gain = gain_r[band_r];
+	assign o_offset = offset_r;
 	assign set_band = band_r;
 	assign set_gain = gain_r[band_r];
+	assign reset_dsp = (state_r == S_RESET);
 	// assign SRAM_CE_N = 0;
 	// assign SRAM_UB_N = 0;
 	// assign SRAM_LB_N = 0;
@@ -92,21 +109,24 @@ module top(
 
 	DSP dsp0(
 		.i_clk(i_clk),
-		.i_rst(i_rst),
+		.i_rst(i_rst || reset_dsp),
 		.i_doneR(doneR),
 		.i_data(r_data),
 		.i_gain(set_gain),
 		.i_set_gain(set_band),
+		.i_offset(offset_r),
 		.o_data(p_data),
 		.o_done(doneDSP)
 	);
 
 always_comb begin
 	state_w = state_r;
+	state_menu_w = state_menu_r;
 	startI_w = startI_r;
 	band_w = band_r;
 	gain_w = gain_r;
 	set_enable_w = set_enable_r;
+	offset_w = offset_r;
 
 	case(state_r)
 		S_INIT: begin
@@ -121,8 +141,28 @@ always_comb begin
 		S_IDLE: begin
 			startI_w = 0;
 			if(i_select) begin
-				state_w = S_BAND_SEL;
-				band_w = 1;
+				state_w = S_MENU;
+				state_menu_w = S_EQ;
+			end
+		end
+
+		S_MENU: begin
+			if(i_up && state_menu_r < 2) begin
+				state_menu_w = state_menu_r + 1;
+			end else if(i_down && state_menu_r > 0) begin
+				state_menu_w = state_menu_r - 1;
+			end
+
+			if(i_select) begin
+				case(state_menu_r)
+					S_EQ: begin
+						state_w = S_BAND_SEL;
+						band_w = 1;
+					end
+					S_OFFSET: begin
+						state_w = S_SET_OFFSET;
+					end
+				endcase
 			end
 		end
 
@@ -156,6 +196,23 @@ always_comb begin
 			end
 		end
 
+		S_SET_OFFSET: begin
+			if(i_back || i_select) begin
+				state_w = S_MENU;
+			end
+			if(i_up && offset_r < 3) begin
+				offset_w = offset_r + 1;
+			end else if(i_down && offset_r > 0) begin
+				offset_w = offset_r - 1;
+			end
+		end
+
+		S_RESET: begin
+			state_w = S_MENU;
+			gain_w = '0;
+			offset_w = 0;
+		end
+
 	endcase
 
 end
@@ -163,16 +220,20 @@ end
 always_ff @(posedge i_clk or posedge i_rst) begin
 	if(i_rst) begin
 		state_r <= S_INIT;
+		state_menu_r <= S_EQ;
 		startI_r <= 1;
 		band_r <= 0;
 		gain_r <= '0;
 		set_enable_r <= 0;
+		offset_r <= 0;
 	end else begin
 		state_r <= state_w;
+		state_menu_r <= state_menu_w;
 		startI_r <= startI_w;
 		band_r <= band_w;
 		gain_r <= gain_w;
 		set_enable_r <= set_enable_w;
+		offset_r <= offset_w;
 	end
 end
 

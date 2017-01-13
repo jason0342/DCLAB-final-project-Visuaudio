@@ -47,6 +47,7 @@ module VGA_Controller(
 	
 	State h_state_r, h_state_w;
 	State v_state_r, v_state_w;
+	State v_state_tmp_r, v_state_tmp_w;
 	logic [10:0] h_count_r, h_count_w;
 	logic [10:0] v_count_r, v_count_w;
 	logic [10:0] x_r, x_w;
@@ -56,32 +57,42 @@ module VGA_Controller(
 		if(i_reset) begin
 			h_state_r <= S_HFRONT;
 			h_count_r <= 0;
+			v_state_r <= S_VFRONT;
+			v_state_tmp_r <= S_VFRONT;
+			v_count_r <= 0;
 			x_r <= 0;
+			y_r <= 0;
 		end else begin
 			h_state_r <= h_state_w;
 			h_count_r <= h_count_w;
-			x_r <= x_w;
-		end
-	end
-
-	always_ff @(posedge o_VGA_HS or posedge i_reset) begin
-		if(i_reset) begin
-			v_state_r <= S_VFRONT;
-			v_count_r <= 0;
-			y_r <= 0;
-		end else begin
 			v_state_r <= v_state_w;
+			v_state_tmp_r <= v_state_tmp_w;
 			v_count_r <= v_count_w;
+			x_r <= x_w;
 			y_r <= y_w;
 		end
 	end
+
+	// always_ff @(posedge o_VGA_HS or posedge i_reset) begin
+	// 	if(i_reset) begin
+	// 		v_state_r <= S_VFRONT;
+	// 		v_count_r <= 0;
+	// 		y_r <= 0;
+	// 	end else begin
+	// 		v_state_r <= v_state_w;
+	// 		v_count_r <= v_count_w;
+	// 		y_r <= y_w;
+	// 	end
+	// end
 
 	always_comb begin
 		// Default values
 		h_state_w = h_state_r;
 		v_state_w = v_state_r;
+		v_state_tmp_w = v_state_tmp_r;
 		h_count_w = h_count_r + 1;
-		v_count_w = v_count_r + 1;
+		// v_count_w = v_count_r + 1;
+		v_count_w = v_count_r;
 		x_w = x_r;
 		y_w = y_r;
 
@@ -96,6 +107,8 @@ module VGA_Controller(
 				if(h_count_r == H_SYNC - 1) begin
 					h_count_w = 0;
 					h_state_w = S_HBACK;
+					v_count_w = v_count_r + 1;
+					v_state_w = v_state_tmp_r;
 				end
 			end
 			S_HBACK: begin
@@ -112,35 +125,38 @@ module VGA_Controller(
 					h_state_w = S_HFRONT;
 				end
 			end
+			default: begin end
 		endcase
 
 		case (v_state_r)
 			S_VFRONT: begin
 				if(v_count_r == V_FRONT - 1) begin
 					v_count_w = 0;
-					v_state_w = S_VSYNC;
+					v_state_tmp_w = S_VSYNC;
 				end
 			end
 			S_VSYNC: begin
 				if(v_count_r == V_SYNC - 1) begin
 					v_count_w = 0;
-					v_state_w = S_VBACK;
+					v_state_tmp_w = S_VBACK;
 				end
 			end
 			S_VBACK: begin
 				if(v_count_r == V_BACK - 1) begin
 					v_count_w = 0;
-					v_state_w = S_VDISPLAY;
+					v_state_tmp_w = S_VDISPLAY;
 				end
 			end
 			S_VDISPLAY: begin
-				y_w = y_r + 1;
+				// y_w = y_r + 1;
+				y_w = v_count_r;
 				if(v_count_r == V_ACT - 1) begin
 					v_count_w = 0;
 					y_w = 0;
-					v_state_w = S_VFRONT;
+					v_state_tmp_w = S_VFRONT;
 				end
 			end
+			default: begin end
 		endcase
 	end
 	

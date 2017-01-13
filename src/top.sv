@@ -8,6 +8,7 @@ module top(
 	input DACLRCK,
 	input i_clk, //BCLK
 	input i_clk2, //100kHz for i2c
+	input i_clk3, //25Mhz
 	input i_rst, //SW00?
 	input i_switch, // enable signal
 
@@ -26,9 +27,18 @@ module top(
 	output [2:0] o_menu_state,
 	output [2:0] o_band,
 	output [31:0] o_gain,
-	output [2:0] o_offset
+	output [2:0] o_offset,
 	// output [1:0] o_ini_state,
 	// output [2:0] o_play_state,
+	output o_VGA_HS,
+	output o_VGA_VS,
+	output o_VGA_SYNC_N,
+	output o_VGA_BLANK_N,
+	output o_VGA_CLK,
+	output[7:0] o_VGA_R,
+	output[7:0] o_VGA_G,
+	output[7:0] o_VGA_B
+
 );
 
 	parameter nBand = 6;
@@ -57,6 +67,8 @@ module top(
 	logic[15:0] set_gain;
 	logic set_enable_r, set_enable_w;
 	logic reset_dsp;
+	logic[3:0][15:0] fft_data;
+	logic fft_done;
 
 	assign o_state = state_r;
 	assign o_menu_state = state_menu_r;
@@ -120,30 +132,41 @@ module top(
 		.o_done(doneDSP)
 	);
 
+	FFTcontroller fftc0(
+		.i_clk(i_clk),
+		.i_rst(i_rst),
+		.i_doneDSP(doneDSP),
+		.i_data(p_data),
+		.o_data(fft_data),
+		.o_data_done(fft_done)
+	);
+
 	// TODO: Add VGA wires, and create a 25Mhz clock
 	// logic [10:0] VGA_X, VGA_Y;
 
-	// Render render(
-	// 	.i_clk(clk25),
-	// 	.i_reset(),
-	// 	.i_VGA_X(VGA_X),
-	// 	.i_VGA_Y(VGA_Y),
-	// 	.o_VGA_R(VGA_R),
-	// 	.o_VGA_G(VGA_G),
-	// 	.o_VGA_B(VGA_B),
-	// );
+	Renderer renderer(
+		.i_clk(i_clk3),
+		.i_reset(i_rst),
+		.i_fft_data(fft_data),
+		.i_fft_done(fft_done),
+		.i_VGA_X(VGA_X),
+		.i_VGA_Y(VGA_Y),
+		.o_VGA_R(VGA_R),
+		.o_VGA_G(VGA_G),
+		.o_VGA_B(VGA_B),
+	);
 
-	// VGA_Controller vga(
-	// 	.i_clk(clk25),
-	// 	.i_reset(),
-	// 	.o_VGA_X(VGA_X),
-	// 	.o_VGA_Y(VGA_Y),
-	// 	.o_VGA_HS(VGA_HS),
-	// 	.o_VGA_VS(VGA_VS),
-	// 	.o_VGA_SYNC_N(VGA_SYNC_N),
-	// 	.o_VGA_BLANK_N(VGA_BLANK_N),
-	// 	.o_VGA_CLK(VGA_CLK)
-	// );
+	VGA_Controller vga(
+		.i_clk(i_clk3),
+		.i_reset(i_rst),
+		.o_VGA_X(VGA_X),
+		.o_VGA_Y(VGA_Y),
+		.o_VGA_HS(VGA_HS),
+		.o_VGA_VS(VGA_VS),
+		.o_VGA_SYNC_N(VGA_SYNC_N),
+		.o_VGA_BLANK_N(VGA_BLANK_N),
+		.o_VGA_CLK(VGA_CLK)
+	);
 
 always_comb begin
 	state_w = state_r;

@@ -223,30 +223,14 @@ module DE2_115(
 		.o_offset(offset0)
 		// .o_ini_state(iniState0),
 		// .o_play_state(playState0),
+		.o_VGA_HS(VGA_HS),
+		.o_VGA_VS(VGA_VS),
+		.o_VGA_SYNC_N(VGA_SYNC_N),
+		.o_VGA_BLANK_N(VGA_BLANK_N),
+		.o_VGA_CLK(VGA_CLK),
+		.o_VGA_R(VGA_R),
+		.o_VGA_G(VGA_G),
+		.o_VGA_B(VGA_B)
 	);
-
-	fft (
-		input  wire        clk_clk,                       //             clk.clk
-		input  wire        fft_ii_0_sink_valid,           //   fft_ii_0_sink.valid
-		output wire        fft_ii_0_sink_ready,           //                .ready
-		input  wire [1:0]  fft_ii_0_sink_error,           //                .error
-		input  wire        fft_ii_0_sink_startofpacket,   //                .startofpacket
-		input  wire        fft_ii_0_sink_endofpacket,     //                .endofpacket
-		input  wire [42:0] fft_ii_0_sink_data,            //                .data
-		output wire        fft_ii_0_source_valid,         // fft_ii_0_source.valid
-		input  wire        fft_ii_0_source_ready,         //                .ready
-		output wire [1:0]  fft_ii_0_source_error,         //                .error
-		output wire        fft_ii_0_source_startofpacket, //                .startofpacket
-		output wire        fft_ii_0_source_endofpacket,   //                .endofpacket
-		output wire [41:0] fft_ii_0_source_data,          //                .data
-		input  wire        reset_reset_n                  //           reset.reset_n
-	);
-	// .sink_real    ({fft_ii_0_sink_data[42:27]}),     //       .data
-	// .sink_imag    ({fft_ii_0_sink_data[26:11]}),     //       .data
-	// .fftpts_in    ({fft_ii_0_sink_data[10:1]}),      //       .data
-	// .inverse      ({fft_ii_0_sink_data[0]}),         //       .data
-	// .source_real  (fft_ii_0_source_real),            //       .data
-	// .source_imag  (fft_ii_0_source_imag),            //       .data
-	// .fftpts_out   (fft_ii_0_fftpts_out)              //       .data
 	
 endmodule

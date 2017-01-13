@@ -3,7 +3,6 @@ module top(
 	input i_back,
 	input i_up,
 	input i_down, //KEY[0]
-	// input SW02, // 0:normal, 1:change speed ?
 	input ADCLRCK,
 	input ADCDAT,
 	input DACLRCK,
@@ -41,10 +40,12 @@ module top(
 		S_BAND_SEL,
 		S_SET_GAIN,
 		S_SET_OFFSET,
-		S_RESET
+		S_RESET_DSP
 	} state_r, state_w;
 
-	enum { S_EQ, S_OFFSET, S_RESET } state_menu_r, state_menu_w;
+	typedef enum { S_EQ, S_OFFSET, S_RESET } Menu_state;
+	Menu_state state_menu_r, state_menu_w;
+	// logic[2:0] state_menu_r, state_menu_w;
 
 	logic startI_r, startI_w;
 	logic doneI, doneP, doneR, doneDSP;
@@ -64,7 +65,7 @@ module top(
 	assign o_offset = offset_r;
 	assign set_band = band_r;
 	assign set_gain = gain_r[band_r];
-	assign reset_dsp = (state_r == S_RESET);
+	assign reset_dsp = (state_r == S_RESET_DSP);
 	// assign SRAM_CE_N = 0;
 	// assign SRAM_UB_N = 0;
 	// assign SRAM_LB_N = 0;
@@ -148,9 +149,9 @@ always_comb begin
 
 		S_MENU: begin
 			if(i_up && state_menu_r < 2) begin
-				state_menu_w = state_menu_r + 1;
+				state_menu_w = Menu_state'(state_menu_r + 1);
 			end else if(i_down && state_menu_r > 0) begin
-				state_menu_w = state_menu_r - 1;
+				state_menu_w = Menu_state'(state_menu_r - 1);
 			end
 
 			if(i_select) begin
@@ -162,14 +163,19 @@ always_comb begin
 					S_OFFSET: begin
 						state_w = S_SET_OFFSET;
 					end
+					S_RESET: begin
+						state_w = S_RESET_DSP;
+					end
 				endcase
+			end else if(i_back) begin
+				state_w = S_IDLE;
 			end
 		end
 
 		S_BAND_SEL: begin
 			set_enable_w = 0;
 			if(i_back) begin
-				state_w = S_IDLE;
+				state_w = S_MENU;
 				band_w = 0;
 			end else if(i_select) begin
 				state_w = S_SET_GAIN;
@@ -200,14 +206,14 @@ always_comb begin
 			if(i_back || i_select) begin
 				state_w = S_MENU;
 			end
-			if(i_up && offset_r < 3) begin
+			if(i_down && offset_r < 3) begin
 				offset_w = offset_r + 1;
-			end else if(i_down && offset_r > 0) begin
+			end else if(i_up && offset_r > 0) begin
 				offset_w = offset_r - 1;
 			end
 		end
 
-		S_RESET: begin
+		S_RESET_DSP: begin
 			state_w = S_MENU;
 			gain_w = '0;
 			offset_w = 0;

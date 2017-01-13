@@ -74,6 +74,7 @@ module SevenHexDecoder(
 				o_s2 = D1;
 				o_s1 = N;
 				o_s0 = D1;
+			end
 
 			1: begin
 				if(i_play_enable) begin
@@ -90,14 +91,14 @@ module SevenHexDecoder(
 			end
 
 			2: begin
-				case(i_menu_state) begin
+				case(i_menu_state)
 					0: begin
 						o_s1 = E;
 						o_s0 = Q;
 					end
 
 					1: begin
-						o_s5 = O;
+						o_s5 = D0;
 						o_s4 = F;
 						o_s3 = F;
 						o_s2 = S;
@@ -113,6 +114,7 @@ module SevenHexDecoder(
 						o_s0 = T;
 					end
 				endcase
+			end
 
 			3: begin
 				o_s1 = H;
@@ -186,6 +188,19 @@ module SevenHexDecoder(
 				endcase
 			end
 
+			5: begin
+				o_s1 = D;
+				o_s0 = B;
+				o_s5 = NE;
+				case(i_offset)
+					0: begin o_s5 = DK; o_s4 = D0; end
+					1: begin o_s4 = D3; end
+					2: begin o_s4 = D6; end
+					3: begin o_s4 = D9; end
+					4: begin o_s4 = D1; o_s3 = D2; end
+					default: begin end
+				endcase
+			end
 			default: begin end
 		endcase
 	end

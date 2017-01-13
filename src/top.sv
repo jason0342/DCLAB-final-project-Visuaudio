@@ -120,6 +120,31 @@ module top(
 		.o_done(doneDSP)
 	);
 
+	// TODO: Add VGA wires, and create a 25Mhz clock
+	// logic [10:0] VGA_X, VGA_Y;
+
+	// Render render(
+	// 	.i_clk(clk25),
+	// 	.i_reset(),
+	// 	.i_VGA_X(VGA_X),
+	// 	.i_VGA_Y(VGA_Y),
+	// 	.o_VGA_R(VGA_R),
+	// 	.o_VGA_G(VGA_G),
+	// 	.o_VGA_B(VGA_B),
+	// );
+
+	// VGA_Controller vga(
+	// 	.i_clk(clk25),
+	// 	.i_reset(),
+	// 	.o_VGA_X(VGA_X),
+	// 	.o_VGA_Y(VGA_Y),
+	// 	.o_VGA_HS(VGA_HS),
+	// 	.o_VGA_VS(VGA_VS),
+	// 	.o_VGA_SYNC_N(VGA_SYNC_N),
+	// 	.o_VGA_BLANK_N(VGA_BLANK_N),
+	// 	.o_VGA_CLK(VGA_CLK)
+	// );
+
 always_comb begin
 	state_w = state_r;
 	state_menu_w = state_menu_r;

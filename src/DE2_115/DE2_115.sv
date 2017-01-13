@@ -138,8 +138,10 @@ module DE2_115(
 	
 	logic[3:0] k_deb;
 	logic[2:0] state0;
+	logic[2:0] menu_state0;
 	logic[2:0] band0;
 	logic[31:0] gain0;
+	logic[2:0] offset0;
 	// logic[1:0] iniState0;
 	// logic[2:0] playState0;
 	logic clk_100k;
@@ -174,8 +176,11 @@ module DE2_115(
 
 	SevenHexDecoder sevenDec(
 		.i_state(state0),
+		.i_menu_state(menu_state0),
 		.i_band(band0),
 		.i_gain(gain0),
+		.i_offset(offset0),
+		.i_play_enable(SW[1]),
 		// .iniState(iniState0),
 		// .recState(recState0),
 		// .playState(playState0),
@@ -212,8 +217,10 @@ module DE2_115(
 		// .SRAM_LB_N(SRAM_LB_N),
 		.DACDAT(AUD_DACDAT),
 		.o_state(state0),
+		.o_menu_state(menu_state0),
 		.o_band(band0),
-		.o_gain(gain0)
+		.o_gain(gain0),
+		.o_offset(offset0)
 		// .o_ini_state(iniState0),
 		// .o_play_state(playState0),
 	);

@@ -6,6 +6,7 @@ module DSP(
 	input [15:0] i_gain,
 	input [2:0] i_set_gain, // choose biquad to set gain, 0: choose none
 	input i_set_enable,
+	input [2:0] i_offset,
 	output[15:0] o_data,
 	output o_done
 );
@@ -56,9 +57,9 @@ always_comb begin
 			done_w = 0;
 			count_w = 0;
 			if(i_doneR) begin
-				idat_w[31:16+q_fp] = (i_data[15] == 1)? '1 : '0;
-				idat_w[15+q_fp:q_fp] = i_data;
-				idat_w[q_fp-1:0] = '0;
+				idat_w[31:16+q_fp-i_offset] = (i_data[15] == 1)? '1 : '0;
+				idat_w[15+q_fp-i_offset:q_fp-i_offset] = i_data;
+				idat_w[q_fp-1-i_offset:0] = '0;
 				state_w = S_RUN;
 			end
 		end

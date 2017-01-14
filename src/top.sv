@@ -28,6 +28,7 @@ module top(
 	output [2:0] o_band,
 	output [31:0] o_gain,
 	output [2:0] o_offset,
+	output [1:0] o_fft_error,
 	// output [1:0] o_ini_state,
 	// output [2:0] o_play_state,
 	output o_VGA_HS,
@@ -67,8 +68,9 @@ module top(
 	logic[15:0] set_gain;
 	logic set_enable_r, set_enable_w;
 	logic reset_dsp;
-	logic[3:0][15:0] fft_data;
+	logic[31:0][15:0] fft_data;
 	logic fft_done;
+	logic[10:0] VGA_X, VGA_Y;
 
 	assign o_state = state_r;
 	assign o_menu_state = state_menu_r;
@@ -138,34 +140,35 @@ module top(
 		.i_doneDSP(doneDSP),
 		.i_data(p_data),
 		.o_data(fft_data),
-		.o_data_done(fft_done)
+		.o_data_done(fft_done),
+		.o_fft_error(o_fft_error)
 	);
 
 	// TODO: Add VGA wires, and create a 25Mhz clock
 	// logic [10:0] VGA_X, VGA_Y;
 
 	Renderer renderer(
-		.i_clk(i_clk3),
-		.i_reset(i_rst),
+		.i_clk(i_clk),
+		.i_rst(i_rst),
 		.i_fft_data(fft_data),
 		.i_fft_done(fft_done),
 		.i_VGA_X(VGA_X),
 		.i_VGA_Y(VGA_Y),
-		.o_VGA_R(VGA_R),
-		.o_VGA_G(VGA_G),
-		.o_VGA_B(VGA_B),
+		.o_VGA_R(o_VGA_R),
+		.o_VGA_G(o_VGA_G),
+		.o_VGA_B(o_VGA_B),
 	);
 
 	VGA_Controller vga(
 		.i_clk(i_clk3),
-		.i_reset(i_rst),
+		.i_rst(i_rst),
 		.o_VGA_X(VGA_X),
 		.o_VGA_Y(VGA_Y),
-		.o_VGA_HS(VGA_HS),
-		.o_VGA_VS(VGA_VS),
-		.o_VGA_SYNC_N(VGA_SYNC_N),
-		.o_VGA_BLANK_N(VGA_BLANK_N),
-		.o_VGA_CLK(VGA_CLK)
+		.o_VGA_HS(o_VGA_HS),
+		.o_VGA_VS(o_VGA_VS),
+		.o_VGA_SYNC_N(o_VGA_SYNC_N),
+		.o_VGA_BLANK_N(o_VGA_BLANK_N),
+		.o_VGA_CLK(o_VGA_CLK)
 	);
 
 always_comb begin

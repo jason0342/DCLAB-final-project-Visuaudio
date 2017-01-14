@@ -142,13 +142,16 @@ module DE2_115(
 	logic[2:0] band0;
 	logic[31:0] gain0;
 	logic[2:0] offset0;
+	logic[1:0] fft_error;
 	// logic[1:0] iniState0;
 	// logic[2:0] playState0;
 	logic clk_100k;
+	logic clk_25M;
 
 	pll altpll0(
 		.altpll_0_c0_clk(AUD_XCK), // 12MHz
 		.altpll_0_c1_clk(clk_100k), //100kHz
+		.altpll_0_c2_clk(clk_25M),
 		.clk_clk(CLOCK_50),
 		.reset_reset_n()
 	);
@@ -181,6 +184,7 @@ module DE2_115(
 		.i_gain(gain0),
 		.i_offset(offset0),
 		.i_play_enable(SW[1]),
+		.i_fft_error(fft_error),
 		// .iniState(iniState0),
 		// .recState(recState0),
 		// .playState(playState0),
@@ -204,6 +208,7 @@ module DE2_115(
 		.DACLRCK(AUD_DACLRCK),
 		.i_clk(AUD_BCLK),
 		.i_clk2(clk_100k),
+		.i_clk3(clk_25M),
 		.i_rst(SW[0]),
 		.i_switch(SW[1]),
 		.I2C_SDAT(I2C_SDAT),
@@ -220,7 +225,8 @@ module DE2_115(
 		.o_menu_state(menu_state0),
 		.o_band(band0),
 		.o_gain(gain0),
-		.o_offset(offset0)
+		.o_offset(offset0),
+		.o_fft_error(fft_error),
 		// .o_ini_state(iniState0),
 		// .o_play_state(playState0),
 		.o_VGA_HS(VGA_HS),

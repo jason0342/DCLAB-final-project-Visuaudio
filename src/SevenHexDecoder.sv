@@ -6,6 +6,7 @@ module SevenHexDecoder(
 	input [31:0] i_gain,
 	input [2:0] i_offset,
 	input i_play_enable,
+	input[1:0] i_fft_error,
 	// input [1:0] speedStat,
 	// input [3:0] speed,
 	// input [1:0] iniState,
@@ -113,6 +114,8 @@ module SevenHexDecoder(
 						o_s1 = E;
 						o_s0 = T;
 					end
+
+					default: begin end
 				endcase
 			end
 
@@ -203,5 +206,15 @@ module SevenHexDecoder(
 			end
 			default: begin end
 		endcase
+		if(i_fft_error != 0) begin
+			o_s7 = F;
+			o_s6 = F;
+			o_s5 = T;
+			o_s4 = E;
+			o_s3 = R;
+			o_s2 = R;
+			o_s1 = i_fft_error[1];
+			o_s0 = i_fft_error[0];
+		end
 	end
 endmodule

@@ -107,7 +107,7 @@ always_comb begin
 			90: begin odat_w[12] = src_data[41:26]; end
 			128: begin odat_w[13] = src_data[41:26]; end
 			181: begin odat_w[14] = src_data[41:26]; end
-			256: begin odat_w[15] = src_data[41:26]; end
+			255: begin odat_w[15] = src_data[41:26]; end
 			default: begin end
 		endcase
 		src_count_w = src_count_r + 1;

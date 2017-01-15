@@ -68,7 +68,7 @@ module top(
 	logic[15:0] set_gain;
 	logic set_enable_r, set_enable_w;
 	logic reset_dsp;
-	logic[15:0][15:0] fft_data;
+	logic[15:0][15:0] fft_data, fft_data2;
 	logic fft_done;
 	logic[10:0] VGA_X, VGA_Y;
 
@@ -144,10 +144,18 @@ module top(
 		.o_fft_error(o_fft_error)
 	);
 
+	FFTDSP fftdsp0(
+		.i_clk(i_clk),
+		.i_rst(i_rst),
+		.i_fft_done(fft_done),
+		.i_data(fft_data),
+		.o_data(fft_data2)
+	);
+
 	Renderer renderer(
 		.i_clk(i_clk),
 		.i_rst(i_rst),
-		.i_fft_data(fft_data),
+		.i_fft_data(fft_data2),
 		.i_fft_done(fft_done),
 		.i_VGA_X(VGA_X),
 		.i_VGA_Y(VGA_Y),

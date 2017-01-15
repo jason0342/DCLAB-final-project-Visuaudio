@@ -118,6 +118,7 @@ module VGA_Controller(
 				if(h_count_r == H_BACK - 1) begin
 					h_count_w = 0;
 					h_state_w = S_HDISPLAY;
+					x_w = 1;
 				end
 			end
 			S_HDISPLAY: begin
@@ -148,11 +149,12 @@ module VGA_Controller(
 				if(v_count_r == V_BACK - 1) begin
 					v_count_w = 0;
 					v_state_tmp_w = S_VDISPLAY;
+					y_w = 1;
 				end
 			end
 			S_VDISPLAY: begin
 				// y_w = y_r + 1;
-				y_w = v_count_r;
+				y_w = v_count_r + 1;
 				if(v_count_r == V_ACT - 1) begin
 					// v_count_w = 0;
 					// y_w = 0;

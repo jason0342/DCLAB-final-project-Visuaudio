@@ -11,7 +11,6 @@ module SpectrumRenderer (
 	logic [7:0] VGA_R, VGA_G, VGA_B;
 	logic [31:0] red, green, blue;
 	logic [10:0] index, specY, relativeX, relativeY, heightY;
-	// logic [3:0] log2A;
 
 	assign o_VGA_R = isShade ? VGA_R >> 2 : VGA_R;
 	assign o_VGA_G = isShade ? VGA_G >> 2 : VGA_G;
@@ -21,8 +20,6 @@ module SpectrumRenderer (
 	parameter BLOCK_Y = 15;
 	parameter PADDING_X = 3;
 	parameter PADDING_Y = 2;
-
-	// log2 log2_0(i_DATA[index], log2A);
 
 always_comb begin
 
@@ -72,8 +69,6 @@ always_comb begin
 		end
 	end
 	specY = (i_DATA[index] + 1) * BLOCK_Y;
-
-	
 
 	// Per pixel drawing
 	if(relativeX >= PADDING_X && relativeX < BLOCK_X - PADDING_X && heightY >= PADDING_Y) begin

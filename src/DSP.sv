@@ -76,15 +76,16 @@ always_comb begin
 	endcase
 
 	// output overflow detection
-	if(odat_r[31] && odat_r[31:q_fp] < {{(17-q_fp){1'b1}}, {15{1'b0}}}) begin
-		odat_tmp[15] = 1;
-		odat_tmp[14:0] = '0;
-	end else if(!odat_r[31] && odat_r[31:q_fp] > {{(17-q_fp){1'b0}}, {15{1'b1}}}) begin
-		odat_tmp[15] = 0;
-		odat_tmp[14:0] = '1;
-	end else begin
-		odat_tmp = odat_r[q_fp+15:q_fp];
-	end
+	// if(odat_r[31] && odat_r[31:q_fp] < {{(17-q_fp){1'b1}}, {15{1'b0}}}) begin
+	// 	odat_tmp[15] = 1;
+	// 	odat_tmp[14:0] = '0;
+	// end else if(!odat_r[31] && odat_r[31:q_fp] > {{(17-q_fp){1'b0}}, {15{1'b1}}}) begin
+	// 	odat_tmp[15] = 0;
+	// 	odat_tmp[14:0] = '1;
+	// end else begin
+	// 	odat_tmp = odat_r[q_fp+15:q_fp];
+	// end
+	odat_tmp = odat_r[q_fp+15:q_fp] << pre_offset;
 
 	case(state_r)
 		S_IDLE: begin

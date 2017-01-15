@@ -1,7 +1,7 @@
 module Renderer (
 	input i_clk,
 	input i_rst,
-	input [31:0][15:0] i_fft_data,
+	input [15:0][15:0] i_fft_data,
 	input i_fft_done,
 	input [10:0] i_VGA_X,
 	input [10:0] i_VGA_Y,
@@ -15,7 +15,7 @@ module Renderer (
 	assign o_VGA_B = iBlue;
 
 	logic [7:0] iRed, iGreen, iBlue;
-	logic [31:0][15:0] fft_data_r, fft_data_w;
+	logic [15:0][15:0] fft_data_r, fft_data_w;
 	logic [2:0] count_r, count_w;
 	logic [15:0] log2A, abs_data;
 
@@ -25,7 +25,7 @@ module Renderer (
 	// assign iRed = '0;
 
 	log2 log2_0(abs_data, log2A);
-	assign abs_data = (fft_data_r[i_VGA_X[8:4]][15])? (2**16-fft_data_r[i_VGA_X[8:4]]) : fft_data_r[i_VGA_X[8:4]];
+	assign abs_data = (fft_data_r[i_VGA_X[8:5]][15])? (2**16-fft_data_r[i_VGA_X[8:5]]) : fft_data_r[i_VGA_X[8:5]];
 
 always_comb begin
 	fft_data_w = fft_data_r;

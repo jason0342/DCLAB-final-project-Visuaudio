@@ -68,7 +68,7 @@ module top(
 	logic[15:0] set_gain;
 	logic set_enable_r, set_enable_w;
 	logic reset_dsp;
-	logic[31:0][15:0] fft_data;
+	logic[15:0][15:0] fft_data;
 	logic fft_done;
 	logic[10:0] VGA_X, VGA_Y;
 
@@ -143,9 +143,6 @@ module top(
 		.o_data_done(fft_done),
 		.o_fft_error(o_fft_error)
 	);
-
-	// TODO: Add VGA wires, and create a 25Mhz clock
-	// logic [10:0] VGA_X, VGA_Y;
 
 	Renderer renderer(
 		.i_clk(i_clk),

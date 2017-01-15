@@ -71,6 +71,7 @@ module top(
 	logic[15:0][15:0] fft_data, fft_data2;
 	logic fft_done;
 	logic[10:0] VGA_X, VGA_Y;
+	logic VGA_VS;
 
 	assign o_state = state_r;
 	assign o_menu_state = state_menu_r;
@@ -80,6 +81,7 @@ module top(
 	assign set_band = band_r;
 	assign set_gain = gain_r[band_r];
 	assign reset_dsp = (state_r == S_RESET_DSP);
+	assign o_VGA_VS = VGA_VS;
 	// assign SRAM_CE_N = 0;
 	// assign SRAM_UB_N = 0;
 	// assign SRAM_LB_N = 0;
@@ -159,6 +161,7 @@ module top(
 		.i_fft_done(fft_done),
 		.i_VGA_X(VGA_X),
 		.i_VGA_Y(VGA_Y),
+		.i_VGA_lock(VGA_VS),
 		.o_VGA_R(o_VGA_R),
 		.o_VGA_G(o_VGA_G),
 		.o_VGA_B(o_VGA_B),
@@ -170,7 +173,7 @@ module top(
 		.o_VGA_X(VGA_X),
 		.o_VGA_Y(VGA_Y),
 		.o_VGA_HS(o_VGA_HS),
-		.o_VGA_VS(o_VGA_VS),
+		.o_VGA_VS(VGA_VS),
 		.o_VGA_SYNC_N(o_VGA_SYNC_N),
 		.o_VGA_BLANK_N(o_VGA_BLANK_N),
 		.o_VGA_CLK(o_VGA_CLK)

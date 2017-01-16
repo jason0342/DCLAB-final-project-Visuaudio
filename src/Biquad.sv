@@ -34,7 +34,8 @@ module Biquad(
 	enum{ S_WAIT, S_SET } set_state_r, set_state_w;
 	enum{ S_IDLE, S_NEXT } run_state_r, run_state_w;
 
-	logic[3:0] count_r, count_w;
+	logic[4:0] count_r, count_w;
+	logic[4:0] count2_r, count2_w;
 	logic[31:0] g_r, g_w; // gain
 	logic[31:0] A_r, A_w; // A = 10^(gain/40)
 	logic[31:0] Ainv_r, Ainv_w; // A^-1
@@ -83,6 +84,7 @@ module Biquad(
 		set_state_w = set_state_r;
 		run_state_w = run_state_r;
 		count_w = count_r;
+		count2_w = count2_w;
 		g_w = g_r;
 		A_w = A_r;
 		Ainv_w = Ainv_r;
@@ -97,12 +99,14 @@ module Biquad(
 
 		case(run_state_r)
 			S_IDLE: begin
+				count2_w = 0;
 				if(i_next) begin
 					run_state_w = S_NEXT;
 				end
 			end
 			S_NEXT: begin
-				if(!i_next) begin
+				count2_w = count2_r + 1;
+				if(!i_next && count2_r == 31) begin
 					x0_w = i_data;
 					x1_w = x0_r;
 					x2_w = x1_r;
@@ -127,7 +131,7 @@ module Biquad(
 
 			S_SET: begin
 				case(count_r)
-					0: begin //calculate A
+					15: begin //calculate A
 						if(g_r == 0) begin
 							A_w = 1<<q_fp;
 							Ainv_w = 1<<q_fp;
@@ -139,12 +143,12 @@ module Biquad(
 							Ainv_w = tmp[4];
 						end
 					end
-					1: begin //calculate a2, b0, b2
+					30: begin //calculate a2, b0, b2
 						b0_w = tmp[11];
 						b2_w = tmp[12];
 						a2_w = tmp[13];
 					end
-					2: begin 
+					31: begin 
 						set_state_w = S_WAIT;
 					end
 					default: begin
@@ -157,9 +161,10 @@ module Biquad(
 
 	always_ff @(posedge i_clk or posedge i_rst) begin
 		if(i_rst) begin
-			set_state_r <= S_WAIT;
+			set_state_r <= S_SET;
 			run_state_r <= S_IDLE;
 			count_r <= 0;
+			count2_r <= 0;
 			A_r <= fix1;
 			Ainv_r <= fix1;
 			g_r <= 0;
@@ -175,6 +180,7 @@ module Biquad(
 			set_state_r <= set_state_w;
 			run_state_r <= run_state_w;
 			count_r <= count_w;
+			count2_r <= count2_w;
 			A_r <= A_w;
 			Ainv_r <= Ainv_w;
 			g_r <= g_w;

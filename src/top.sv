@@ -25,7 +25,7 @@ module top(
 	output DACDAT,
 	output [2:0] o_state,
 	output [2:0] o_band,
-	output [15:0] o_gain
+	output [31:0] o_gain
 	// output [1:0] o_ini_state,
 	// output [2:0] o_play_state,
 );
@@ -39,8 +39,9 @@ module top(
 	logic[15:0] r_data, p_data;
 	logic[2:0] band_r, band_w;
 	logic[2:0] set_band;
-	logic[nBand:0][15:0] gain_r, gain_w;
+	logic[nBand:0][31:0] gain_r, gain_w;
 	logic[15:0] set_gain;
+	logic set_enable_r, set_enable_w;
 
 	assign o_state = state_r;
 	assign o_band = band_r;
@@ -94,8 +95,8 @@ module top(
 		.i_rst(i_rst),
 		.i_doneR(doneR),
 		.i_data(r_data),
-		.i_gain(set_band),
-		.i_set_gain(set_gain),
+		.i_gain(set_gain),
+		.i_set_gain(set_band),
 		.o_data(p_data),
 		.o_done(doneDSP)
 	);
@@ -105,6 +106,7 @@ always_comb begin
 	startI_w = startI_r;
 	band_w = band_r;
 	gain_w = gain_r;
+	set_enable_w = set_enable_r;
 
 	case(state_r)
 		S_INIT: begin
@@ -125,6 +127,7 @@ always_comb begin
 		end
 
 		S_BAND_SEL: begin
+			set_enable_w = 0;
 			if(i_back) begin
 				state_w = S_IDLE;
 				band_w = 0;
@@ -139,14 +142,15 @@ always_comb begin
 		end
 
 		S_SET_GAIN: begin
-			if(i_back) begin
+			if(i_back || i_select) begin
 				state_w = S_BAND_SEL;
+				set_enable_w = 1;
 			end else if (i_up) begin
-				if(int'(gain_r[band_r]) <= 12) begin
+				if(gain_r[band_r] <= 11 || gain_r[band_r][15] == 1) begin
 					gain_w[band_r] = gain_r[band_r] + 1;
 				end
 			end else if (i_down) begin
-				if(int'(gain_r[band_r]) >= -12) begin
+				if(~gain_r[band_r] <= 10 || gain_r[band_r][15] == 0) begin
 					gain_w[band_r] = gain_r[band_r] - 1;
 				end
 			end
@@ -162,11 +166,13 @@ always_ff @(posedge i_clk or posedge i_rst) begin
 		startI_r <= 1;
 		band_r <= 0;
 		gain_r <= '0;
+		set_enable_r <= 0;
 	end else begin
 		state_r <= state_w;
 		startI_r <= startI_w;
 		band_r <= band_w;
 		gain_r <= gain_w;
+		set_enable_r <= set_enable_w;
 	end
 end
 

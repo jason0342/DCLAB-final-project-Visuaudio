@@ -139,7 +139,7 @@ module DE2_115(
 	logic[3:0] k_deb;
 	logic[2:0] state0;
 	logic[2:0] band0;
-	logic[15:0] gain0;
+	logic[31:0] gain0;
 	// logic[1:0] iniState0;
 	// logic[2:0] playState0;
 	logic clk_100k;

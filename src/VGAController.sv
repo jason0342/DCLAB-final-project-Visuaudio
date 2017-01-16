@@ -1,7 +1,7 @@
 module VGA_Controller(
 	// Control Signal
 	input  i_clk,
-	input  i_reset,
+	input  i_rst,
 	// Host Side
 	output [10:0] o_VGA_X,
 	output [10:0] o_VGA_Y,
@@ -32,7 +32,7 @@ module VGA_Controller(
 	assign o_VGA_HS = (h_state_r != S_HSYNC);
 	assign o_VGA_VS = (v_state_r != S_VSYNC);
 	assign o_VGA_X = x_r;
-	assign o_VGA_Y = y_r;
+	assign o_VGA_Y = v_count_r;
 
 	typedef enum {
 			S_HFRONT,
@@ -53,8 +53,8 @@ module VGA_Controller(
 	logic [10:0] x_r, x_w;
 	logic [10:0] y_r, y_w;
 
-	always_ff @(posedge i_clk or posedge i_reset) begin
-		if(i_reset) begin
+	always_ff @(posedge i_clk or posedge i_rst) begin
+		if(i_rst) begin
 			h_state_r <= S_HFRONT;
 			h_count_r <= 0;
 			v_state_r <= S_VFRONT;
@@ -69,7 +69,7 @@ module VGA_Controller(
 			v_state_tmp_r <= v_state_tmp_w;
 			v_count_r <= v_count_w;
 			x_r <= x_w;
-			y_r <= y_w;
+			y_r <= v_count_r;
 		end
 	end
 
@@ -109,6 +109,9 @@ module VGA_Controller(
 					h_state_w = S_HBACK;
 					v_count_w = v_count_r + 1;
 					v_state_w = v_state_tmp_r;
+					if(v_count_r == V_ACT - 1) begin
+						v_count_w = 0;
+					end
 				end
 			end
 			S_HBACK: begin
@@ -151,8 +154,8 @@ module VGA_Controller(
 				// y_w = y_r + 1;
 				y_w = v_count_r;
 				if(v_count_r == V_ACT - 1) begin
-					v_count_w = 0;
-					y_w = 0;
+					// v_count_w = 0;
+					// y_w = 0;
 					v_state_tmp_w = S_VFRONT;
 				end
 			end

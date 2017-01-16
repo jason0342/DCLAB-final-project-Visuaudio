@@ -23,29 +23,29 @@ module DSP(
 	assign o_done = done_r;
 	assign o_data = odat_tmp;
 
-	Biquad #(.f0(100))  (i_clk, i_rst, (i_set_gain == 1), i_doneR, i_gain, idat_r, tmp[0]);
-	Biquad #(.f0(200))  (i_clk, i_rst, (i_set_gain == 2), i_doneR, i_gain, tmp[0], tmp[1]);
-	Biquad #(.f0(400))  (i_clk, i_rst, (i_set_gain == 3), i_doneR, i_gain, tmp[1], tmp[2]);
-	Biquad #(.f0(800))  (i_clk, i_rst, (i_set_gain == 4), i_doneR, i_gain, tmp[2], tmp[3]);
-	Biquad #(.f0(1600)) (i_clk, i_rst, (i_set_gain == 5), i_doneR, i_gain, tmp[3], tmp[4]);
-	Biquad #(.f0(3200)) (i_clk, i_rst, (i_set_gain == 6), i_doneR, i_gain, tmp[4], odat_w);
+	Biquad #(.f0(100))  biquad1(i_clk, i_rst, (i_set_gain == 1), i_doneR, i_gain, idat_r, tmp[0]);
+	Biquad #(.f0(200))  biquad2(i_clk, i_rst, (i_set_gain == 2), i_doneR, i_gain, tmp[0], tmp[1]);
+	Biquad #(.f0(400))  biquad3(i_clk, i_rst, (i_set_gain == 3), i_doneR, i_gain, tmp[1], tmp[2]);
+	Biquad #(.f0(800))  biquad4(i_clk, i_rst, (i_set_gain == 4), i_doneR, i_gain, tmp[2], tmp[3]);
+	Biquad #(.f0(1600)) biquad5(i_clk, i_rst, (i_set_gain == 5), i_doneR, i_gain, tmp[3], tmp[4]);
+	Biquad #(.f0(3200)) biquad6(i_clk, i_rst, (i_set_gain == 6), i_doneR, i_gain, tmp[4], odat_w);
 
 always_comb begin
 	state_w = state_r;
 	idat_w = idat_r;
-	odat_w = odat_r;
+	// odat_w = odat_r;
 	done_w = done_r;
 	count_w = count_r;
 
 	// output overflow detection
-	if(odat_r[31] && odat_r[31:q_fp] < {(17-q_fp){1'b1}, 15'b0}) begin
+	if(odat_r[31] && odat_r[31:q_fp] < {{(17-q_fp){1'b1}}, {15{1'b0}}}) begin
 		odat_tmp[15] = 1;
 		odat_tmp[14:0] = '0;
-	end else if(!odat_r[31] && odat_r[31:q_fp] > {(17-q_fp){1'b0}, 15'b1}) begin
+	end else if(!odat_r[31] && odat_r[31:q_fp] > {{(17-q_fp){1'b0}}, {15{1'b1}}}) begin
 		odat_tmp[15] = 0;
 		odat_tmp[14:0] = '1;
 	end else begin
-		odat_tmp = odat_r;
+		odat_tmp = odat_r[q_fp+15:q_fp];
 	end
 
 	case(state_r)
@@ -91,3 +91,5 @@ always_ff @(posedge i_clk or posedge i_rst) begin
 		done_r <= done_w;
 	end
 end
+
+endmodule // DSP

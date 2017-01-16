@@ -51,14 +51,23 @@ module top(
 	// assign SRAM_UB_N = 0;
 	// assign SRAM_LB_N = 0;
 
-	I2CManager i2cM(
+	// I2CManager i2cM(
+	// 	.i_start(startI_r),
+	// 	.i_clk(i_clk2),
+	// 	.i_rst(i_rst),
+	// 	.o_finished(doneI),
+	// 	.o_sclk(I2C_SCLK),
+	// 	.o_sdat(I2C_SDAT),
+	// 	.o_ini_state(o_ini_state)
+	// );
+
+	I2cInitializer i2cM(
 		.i_start(startI_r),
 		.i_clk(i_clk2),
 		.i_rst(i_rst),
 		.o_finished(doneI),
 		.o_sclk(I2C_SCLK),
-		.o_sdat(I2C_SDAT),
-		.o_ini_state(o_ini_state)
+		.o_sdat(I2C_SDAT)
 	);
 
 	ADCcontroller adc(
@@ -109,7 +118,6 @@ always_comb begin
 
 		S_IDLE: begin
 			startI_w = 0;
-			pos_w = 0;
 			if(i_select) begin
 				state_w = S_BAND_SEL;
 				band_w = 1;
@@ -125,7 +133,7 @@ always_comb begin
 			end else if(i_up && band_r != nBand) begin
 				band_w = band_r + 1;
 			end else if(i_down && band_r != 0) begin
-				band_w = band_R - 1;
+				band_w = band_r - 1;
 			end
 
 		end
@@ -135,11 +143,11 @@ always_comb begin
 				state_w = S_BAND_SEL;
 			end else if (i_up) begin
 				if(int'(gain_r[band_r]) <= 12) begin
-					gain_w[band_r] = int'(gain_r[band_r]) + 1;
+					gain_w[band_r] = gain_r[band_r] + 1;
 				end
 			end else if (i_down) begin
 				if(int'(gain_r[band_r]) >= -12) begin
-					gain_w[band_r] = int'(gain_r[band_r]) - 1;
+					gain_w[band_r] = gain_r[band_r] - 1;
 				end
 			end
 		end

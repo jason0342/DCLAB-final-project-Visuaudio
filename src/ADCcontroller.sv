@@ -3,7 +3,7 @@ module ADCcontroller(
 	input i_ADCLRCK,
 	input i_ADCDAT,
 	input i_BCLK,
-	output [31:0] o_DATA,
+	output [15:0] o_DATA,
 	output o_done,
 	output [1:0] o_REC_STATE
 );
@@ -11,10 +11,11 @@ module ADCcontroller(
 	logic pre_LRCLK_r, pre_LRCLK_w;
 	logic done_r, done_w;
 	logic [3:0] bitnum_r, bitnum_w;
-	logic [31:0] data_r, data_w;
+	logic [15:0] data_r, data_w;
 
 	assign o_done = done_r;
 	assign o_REC_STATE = state_r;
+	assign o_DATA = data_r;
 
 	// Assignments
 	always_ff @( posedge i_BCLK ) begin
@@ -52,7 +53,7 @@ module ADCcontroller(
 				if(i_record == 0) begin
 					state_w = S_IDLE;
 				end else begin
-					data_w[bitnum_r] = i_ADCDAT;
+					data_w[15 - bitnum_r] = i_ADCDAT;
 					bitnum_w = bitnum_r + 1;
 					if(bitnum_r == 15) begin
 						state_w = S_WAIT;

@@ -63,7 +63,7 @@ module SevenHexDecoder(
 		o_s6 = DK;
 		o_s7 = DK;
 
-		case(state)
+		case(i_state)
 			1: begin
 				o_s7 = D1;
 				o_s6 = D0;
@@ -73,7 +73,7 @@ module SevenHexDecoder(
 
 			2: begin
 				o_s1 = H;
-				o_s2 = D2;
+				o_s0 = D2;
 				o_s5 = D0;
 				o_s4 = D0;
 				case(i_band)
@@ -133,9 +133,9 @@ module SevenHexDecoder(
 					-7: begin o_s5 = NE; o_s4 = D7; end
 					-8: begin o_s5 = NE; o_s4 = D8; end
 					-9: begin o_s5 = NE; o_s4 = D9; end
-					-10: begin o_S6 = NE; o_s5 = D1; o_s4 = D0; end
-					-11: begin o_S6 = NE; o_s5 = D1; o_s4 = D1; end
-					-12: begin o_S6 = NE; o_s5 = D1; o_s4 = D2; end
+					-10: begin o_s6 = NE; o_s5 = D1; o_s4 = D0; end
+					-11: begin o_s6 = NE; o_s5 = D1; o_s4 = D1; end
+					-12: begin o_s6 = NE; o_s5 = D1; o_s4 = D2; end
 				endcase
 			end
 

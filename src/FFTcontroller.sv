@@ -7,17 +7,12 @@ module FFTcontroller (
 	output o_data_done,
 	output[1:0] o_fft_error
 );
-
-	// parameter [15:0][15:0] sample_table = 
-	// 	'{ 16'd1, 16'd2, 16'd3, 16'd4, 16'd6, 16'd8, 16'd11, 16'd16, 
-	// 	16'd23, 16'd32, 16'd45, 16'd64, 16'd90, 16'd128, 16'd181, 16'd256};
 	
 	enum{ S_WAIT, S_SEND } state_r, state_w;
 
 	logic[15:0] idat_r, idat_w;
 	logic[15:0] sink_count_r, sink_count_w;
 	logic[15:0] src_count_r, src_count_w;
-	logic[3:0] sample_count_r, sample_count_w;
 	logic[41:0] src_data;
 	logic sink_sop_r, sink_sop_w; 
 	logic sink_eop_r, sink_eop_w;
@@ -52,7 +47,6 @@ always_comb begin
 	odat_w = odat_r;
 	sink_count_w = sink_count_r;
 	src_count_w = src_count_r;
-	sample_count_w = sample_count_r;
 	sink_sop_w = sink_sop_r;
 	sink_eop_w = sink_eop_r;
 	sink_valid_w = sink_valid_r;
@@ -61,9 +55,9 @@ always_comb begin
 		S_WAIT: begin
 			sink_sop_w = 0;
 			sink_eop_w = 0;
-			if(sink_count_r == 511) begin
-				sink_count_w = 0;
-			end
+			// if(sink_count_r == 511) begin
+			// 	sink_count_w = 0;
+			// end
 			if(i_doneDSP) begin
 				idat_w = i_data;
 				state_w = S_SEND;
@@ -73,12 +67,13 @@ always_comb begin
 		S_SEND: begin
 			if(sink_ready) begin
 				sink_valid_w = 1;
+				sink_count_w = sink_count_r + 1;
 				if(sink_count_r == 0) begin
 					sink_sop_w = 1;
 				end else if (sink_count_r == 511) begin
 					sink_eop_w = 1;
+					sink_count_w = 0;
 				end
-				sink_count_w = sink_count_r + 1;
 				state_w = S_WAIT;
 			end
 
@@ -113,10 +108,8 @@ always_comb begin
 		src_count_w = src_count_r + 1;
 		if(src_eop) begin
 			src_count_w = 0;
-			sample_count_w = 0;
 		end
 	end
-
 end
 
 always_ff@(posedge i_clk or posedge i_rst) begin
@@ -126,7 +119,6 @@ always_ff@(posedge i_clk or posedge i_rst) begin
 		odat_r <= '0;
 		sink_count_r <= 0;
 		src_count_r <= 0;
-		sample_count_r <= 0;
 		sink_sop_r <= 0;
 		sink_eop_r <= 0;
 		sink_valid_r <= 0;
@@ -136,7 +128,6 @@ always_ff@(posedge i_clk or posedge i_rst) begin
 		odat_r <= odat_w;
 		sink_count_r <= sink_count_w;
 		src_count_r <= src_count_w;
-		sample_count_r <= sample_count_w;
 		sink_sop_r <= sink_sop_w;
 		sink_eop_r <= sink_eop_w;
 		sink_valid_r <= sink_valid_w;

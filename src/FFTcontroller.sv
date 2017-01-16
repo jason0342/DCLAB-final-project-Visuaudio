@@ -8,12 +8,14 @@ module FFTcontroller (
 	output[1:0] o_fft_error
 );
 	
+	parameter fft_length = 2048;
+
 	enum{ S_WAIT, S_SEND } state_r, state_w;
 
 	logic[15:0] idat_r, idat_w;
 	logic[15:0] sink_count_r, sink_count_w;
 	logic[15:0] src_count_r, src_count_w;
-	logic[41:0] src_data;
+	logic[43:0] src_data;
 	logic sink_sop_r, sink_sop_w; 
 	logic sink_eop_r, sink_eop_w;
 	logic sink_valid_r, sink_valid_w;
@@ -28,7 +30,7 @@ module FFTcontroller (
 		.fft_ii_0_sink_error(0),
 		.fft_ii_0_sink_startofpacket(sink_ready && state_r == S_SEND && sink_count_r == 0),
 		.fft_ii_0_sink_endofpacket(sink_ready && state_r == S_SEND && sink_count_r == 511),
-		.fft_ii_0_sink_data({idat_r, {16{1'b0}}, {10'b1000000000}, {1'b0}}),
+		.fft_ii_0_sink_data({idat_r, {16{1'b0}}, {12'b100000000000}, {1'b0}}),
 		.fft_ii_0_source_valid(src_valid),
 		.fft_ii_0_source_ready(1),
 		.fft_ii_0_source_error(o_fft_error),
@@ -70,7 +72,7 @@ always_comb begin
 				sink_count_w = sink_count_r + 1;
 				if(sink_count_r == 0) begin
 					sink_sop_w = 1;
-				end else if (sink_count_r == 511) begin
+				end else if (sink_count_r == fft_length - 1) begin
 					sink_eop_w = 1;
 					sink_count_w = 0;
 				end
@@ -87,22 +89,22 @@ always_comb begin
 		// 	sample_count_w = sample_count_r + 1;
 		// end
 		case(src_count_r)
-			1: begin odat_w[0] = src_data[41:26]; end
-			2: begin odat_w[1] = src_data[41:26]; end
-			3: begin odat_w[2] = src_data[41:26]; end
-			4: begin odat_w[3] = src_data[41:26]; end
-			6: begin odat_w[4] = src_data[41:26]; end
-			8: begin odat_w[5] = src_data[41:26]; end
-			11: begin odat_w[6] = src_data[41:26]; end
-			16: begin odat_w[7] = src_data[41:26]; end
-			23: begin odat_w[8] = src_data[41:26]; end
-			32: begin odat_w[9] = src_data[41:26]; end
-			45: begin odat_w[10] = src_data[41:26]; end
-			64: begin odat_w[11] = src_data[41:26]; end
-			90: begin odat_w[12] = src_data[41:26]; end
-			128: begin odat_w[13] = src_data[41:26]; end
-			181: begin odat_w[14] = src_data[41:26]; end
-			255: begin odat_w[15] = src_data[41:26]; end
+			5: begin odat_w[0] = src_data[41:26]; end
+			7: begin odat_w[1] = src_data[41:26]; end
+			10: begin odat_w[2] = src_data[41:26]; end
+			15: begin odat_w[3] = src_data[41:26]; end
+			22: begin odat_w[4] = src_data[41:26]; end
+			31: begin odat_w[5] = src_data[41:26]; end
+			44: begin odat_w[6] = src_data[41:26]; end
+			65: begin odat_w[7] = src_data[41:26]; end
+			91: begin odat_w[8] = src_data[41:26]; end
+			127: begin odat_w[9] = src_data[41:26]; end
+			180: begin odat_w[10] = src_data[41:26]; end
+			255: begin odat_w[11] = src_data[41:26]; end
+			360: begin odat_w[12] = src_data[41:26]; end
+			511: begin odat_w[13] = src_data[41:26]; end
+			722: begin odat_w[14] = src_data[41:26]; end
+			1023: begin odat_w[15] = src_data[41:26]; end
 			default: begin end
 		endcase
 		src_count_w = src_count_r + 1;

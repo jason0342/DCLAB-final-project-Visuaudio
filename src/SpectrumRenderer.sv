@@ -11,6 +11,7 @@ module SpectrumRenderer (
 	logic [7:0] VGA_R, VGA_G, VGA_B;
 	logic [31:0] red, green, blue;
 	logic [10:0] index, specY, relativeX, relativeY, heightY;
+	// logic [3:0] log2A;
 
 	assign o_VGA_R = isShade ? VGA_R >> 2 : VGA_R;
 	assign o_VGA_G = isShade ? VGA_G >> 2 : VGA_G;
@@ -20,6 +21,8 @@ module SpectrumRenderer (
 	parameter BLOCK_Y = 15;
 	parameter PADDING_X = 3;
 	parameter PADDING_Y = 2;
+
+	// log2 log2_0(i_DATA[index], log2A);
 
 always_comb begin
 
@@ -48,6 +51,13 @@ always_comb begin
 	end
 
 	// Location calculations
+	if(i_VGA_Y < 240) begin
+		heightY = 239 - i_VGA_Y;
+		isShade = 0;
+	end else begin
+		heightY = i_VGA_Y - 240;
+		isShade = 1;
+	end
 	index = 0;
 	relativeY = 0;
 	for (int i = 0; i < 16; i++) begin
@@ -56,20 +66,14 @@ always_comb begin
 		end
 	end
 	relativeX = i_VGA_X - (index * BLOCK_X);
-	for (int i = 0; i < 32; i++) begin
-		if(i_VGA_Y > (i * BLOCK_Y)) begin
-			relativeY = i_VGA_Y - (i * BLOCK_Y);
+	for (int i = 0; i < 16; i++) begin
+		if(heightY > (i * BLOCK_Y)) begin
+			relativeY = heightY - (i * BLOCK_Y);
 		end
 	end
 	specY = (i_DATA[index] + 1) * BLOCK_Y;
 
-	if(i_VGA_Y < 240) begin
-		heightY = 239 - i_VGA_Y;
-		isShade = 0;
-	end else begin
-		heightY = i_VGA_Y - 240;
-		isShade = 1;
-	end
+	
 
 	// Per pixel drawing
 	if(relativeX >= PADDING_X && relativeX < BLOCK_X - PADDING_X && heightY >= PADDING_Y) begin

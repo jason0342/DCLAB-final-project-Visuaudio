@@ -3,23 +3,28 @@ module FFTcontroller (
 	input i_rst,
 	input i_doneDSP,
 	input [15:0] i_data,
-	output [31:0][15:0] o_data,
+	output [15:0][15:0] o_data,
 	output o_data_done,
 	output[1:0] o_fft_error
 );
+
+	// parameter [15:0][15:0] sample_table = 
+	// 	'{ 16'd1, 16'd2, 16'd3, 16'd4, 16'd6, 16'd8, 16'd11, 16'd16, 
+	// 	16'd23, 16'd32, 16'd45, 16'd64, 16'd90, 16'd128, 16'd181, 16'd256};
 	
 	enum{ S_WAIT, S_SEND } state_r, state_w;
 
 	logic[15:0] idat_r, idat_w;
 	logic[15:0] sink_count_r, sink_count_w;
 	logic[15:0] src_count_r, src_count_w;
+	logic[3:0] sample_count_r, sample_count_w;
 	logic[41:0] src_data;
 	logic sink_sop_r, sink_sop_w; 
 	logic sink_eop_r, sink_eop_w;
 	logic sink_valid_r, sink_valid_w;
 	logic sink_ready, src_sop, src_eop, src_valid;
 
-	logic[31:0][15:0] odat_r, odat_w;
+	logic[15:0][15:0] odat_r, odat_w;
 
 	fft fft0(
 		.clk_clk(i_clk),
@@ -47,6 +52,7 @@ always_comb begin
 	odat_w = odat_r;
 	sink_count_w = sink_count_r;
 	src_count_w = src_count_r;
+	sample_count_w = sample_count_r;
 	sink_sop_w = sink_sop_r;
 	sink_eop_w = sink_eop_r;
 	sink_valid_w = sink_valid_r;
@@ -81,12 +87,33 @@ always_comb begin
 	endcase
 
 	if(src_valid) begin
-		if(src_count_r < 256) begin
-			odat_w[src_count_r[7:3]] = src_data[41:26];
-		end
+		// if(src_count_r == sample_table[sample_count_r]) begin
+		// 	odat_w[sample_count_r] = src_data[41:26];
+		// 	sample_count_w = sample_count_r + 1;
+		// end
+		case(src_count_r)
+			1: begin odat_w[0] = src_data[41:26]; end
+			2: begin odat_w[1] = src_data[41:26]; end
+			3: begin odat_w[2] = src_data[41:26]; end
+			4: begin odat_w[3] = src_data[41:26]; end
+			6: begin odat_w[4] = src_data[41:26]; end
+			8: begin odat_w[5] = src_data[41:26]; end
+			11: begin odat_w[6] = src_data[41:26]; end
+			16: begin odat_w[7] = src_data[41:26]; end
+			23: begin odat_w[8] = src_data[41:26]; end
+			32: begin odat_w[9] = src_data[41:26]; end
+			45: begin odat_w[10] = src_data[41:26]; end
+			64: begin odat_w[11] = src_data[41:26]; end
+			90: begin odat_w[12] = src_data[41:26]; end
+			128: begin odat_w[13] = src_data[41:26]; end
+			181: begin odat_w[14] = src_data[41:26]; end
+			256: begin odat_w[15] = src_data[41:26]; end
+			default: begin end
+		endcase
 		src_count_w = src_count_r + 1;
 		if(src_eop) begin
 			src_count_w = 0;
+			sample_count_w = 0;
 		end
 	end
 
@@ -99,6 +126,7 @@ always_ff@(posedge i_clk or posedge i_rst) begin
 		odat_r <= '0;
 		sink_count_r <= 0;
 		src_count_r <= 0;
+		sample_count_r <= 0;
 		sink_sop_r <= 0;
 		sink_eop_r <= 0;
 		sink_valid_r <= 0;
@@ -108,6 +136,7 @@ always_ff@(posedge i_clk or posedge i_rst) begin
 		odat_r <= odat_w;
 		sink_count_r <= sink_count_w;
 		src_count_r <= src_count_w;
+		sample_count_r <= sample_count_w;
 		sink_sop_r <= sink_sop_w;
 		sink_eop_r <= sink_eop_w;
 		sink_valid_r <= sink_valid_w;

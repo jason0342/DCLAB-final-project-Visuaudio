@@ -156,6 +156,7 @@ module top(
 
 	Renderer renderer(
 		.i_clk(i_clk),
+		.i_clk2(i_clk3),
 		.i_rst(i_rst),
 		.i_fft_data(fft_data2),
 		.i_fft_done(fft_done),

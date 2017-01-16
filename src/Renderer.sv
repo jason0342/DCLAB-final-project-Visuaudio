@@ -1,5 +1,6 @@
 module Renderer (
 	input i_clk,
+	input i_clk2,
 	input i_rst,
 	input [15:0][15:0] i_fft_data,
 	input i_fft_done,
@@ -63,13 +64,19 @@ always_ff @(posedge i_clk or posedge i_rst) begin
 		fft_data_r <= 0;
 		log2_data_r <= 0;
 		state_r <= S_WAIT;
-		VGA_R_r <= '0;
-		VGA_G_r <= '0;
-		VGA_B_r <= '0;
 	end else begin
 		fft_data_r <= fft_data_w;
 		log2_data_r <= log2_data_w;
 		state_r <= state_w;
+	end
+end
+
+always_ff @(posedge i_clk2 or posedge i_rst) begin
+	if(i_rst) begin
+		VGA_R_r <= 0;
+		VGA_G_r <= 0;
+		VGA_B_r <= 0;
+	end else begin
 		VGA_R_r <= VGA_R_w;
 		VGA_G_r <= VGA_G_w;
 		VGA_B_r <= VGA_B_w;

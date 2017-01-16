@@ -13,6 +13,7 @@ module DSP(
 
 	parameter q_fp = 15; // Q15 fixed point
 	parameter fix1 = 1<<q_fp;
+	parameter pre_offset = 2; // -6dB offset to avoid saturation
 
 	enum{ S_IDLE, S_RUN, S_DONE } state_r, state_w;
 
@@ -21,7 +22,7 @@ module DSP(
 	logic done_r, done_w;
 	logic[5:0][31:0] tmp;
 	logic[15:0] odat_tmp;
-	logic[15:0] idat_tmp;
+	logic signed [31:0] idat_tmp, idat_tmp2;
 
 	assign o_done = done_r;
 	assign o_data = odat_tmp;
@@ -42,28 +43,35 @@ always_comb begin
 	done_w = done_r;
 	count_w = count_r;
 
+	idat_tmp = '0;
+	idat_tmp[31:16] = i_data;
+
 	case(i_offset) 
 		0: begin
-			idat_tmp = i_data;
+			idat_tmp2 = idat_tmp >>> (16 - q_fp + pre_offset);
 		end
 		1: begin
-			idat_tmp = i_data >> 1;
-			idat_tmp[15] = i_data[15];
+			// idat_tmp = i_data >> 1;
+			// idat_tmp[15] = i_data[15];
+			idat_tmp2 = idat_tmp >>> (16 - q_fp + pre_offset + 1);
 		end
 		2: begin
-			idat_tmp = i_data >> 2;
-			idat_tmp[15:14] = {2{i_data[15]}};
+			// idat_tmp = i_data >> 2;
+			// idat_tmp[15:14] = {2{i_data[15]}};
+			idat_tmp2 = idat_tmp >>> (16 - q_fp + pre_offset + 2);
 		end
 		3: begin
-			idat_tmp = i_data >> 3;
-			idat_tmp[15:13] = {3{i_data[15]}};
+			// idat_tmp = i_data >> 3;
+			// idat_tmp[15:13] = {3{i_data[15]}};
+			idat_tmp2 = idat_tmp >>> (16 - q_fp + pre_offset + 3);
 		end
 		4: begin
-			idat_tmp = i_data >> 4;
-			idat_tmp[15:12] = {4{i_data[15]}};
+			// idat_tmp = i_data >> 4;
+			// idat_tmp[15:12] = {4{i_data[15]}};
+			idat_tmp2 = idat_tmp >>> (16 - q_fp + pre_offset + 4);
 		end
 		default: begin
-			idat_tmp = i_data;
+			idat_tmp2 = idat_tmp >>> (16 - q_fp + pre_offset);
 		end
 	endcase
 
@@ -83,10 +91,10 @@ always_comb begin
 			done_w = 0;
 			count_w = 0;
 			if(i_doneR) begin
-				
-				idat_w[31:16+q_fp] = (idat_tmp[15] == 1)? '1 : '0;
-				idat_w[15+q_fp:q_fp] = idat_tmp;
-				idat_w[q_fp-1:0] = '0;
+				idat_w = idat_tmp2;
+				// idat_w[31:16+q_fp] = (idat_tmp[15] == 1)? '1 : '0;
+				// idat_w[15+q_fp:q_fp] = idat_tmp;
+				// idat_w[q_fp-1:0] = '0;
 				state_w = S_RUN;
 			end
 		end

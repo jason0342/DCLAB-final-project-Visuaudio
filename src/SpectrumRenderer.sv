@@ -2,6 +2,7 @@ module SpectrumRenderer (
 	input [15:0][3:0] i_DATA,
 	input [10:0] i_VGA_X,
 	input [10:0] i_VGA_Y,
+	input [15:0] i_beat,
 	output [7:0] o_VGA_R,
 	output [7:0] o_VGA_G,
 	output [7:0] o_VGA_B
@@ -45,6 +46,26 @@ always_comb begin
 		red = '0;
 		green = (51 * (639 - i_VGA_X)) >> 5;
 		blue = 255;
+	end
+
+	if(i_beat != 0) begin
+		if(i_VGA_X < 160) begin
+			red = 255;
+			green = 255 - ((255 - ((51 * i_VGA_X) >> 5)) >> 4) * i_beat;
+			blue = 255 - (i_beat << 4);
+		end else if(i_VGA_X < 320) begin
+			red = 255 - ((255 - ((51 * (319 - i_VGA_X)) >> 5)) >> 4) * i_beat;
+			green = 255;
+			blue = 255 - (i_beat << 4);
+		end else if(i_VGA_X < 480) begin
+			red = 255 - (i_beat << 4);
+			green = 255;
+			blue = 255 - ((255 - ((51 * (i_VGA_X - 320)) >> 5)) >> 4) * i_beat;
+		end else begin
+			red = 255 - (i_beat << 4);
+			green = 255 - ((255 - ((51 * (639 - i_VGA_X)) >> 5)) >> 4) * i_beat;
+			blue = 255;
+		end
 	end
 
 	// Location calculations
@@ -97,7 +118,6 @@ always_comb begin
 			VGA_B = (blue * (56 + specY - heightY)) >> 8;
 		end
 	end
-
 end
 
 endmodule

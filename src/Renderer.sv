@@ -20,6 +20,7 @@ module Renderer (
 	logic [7:0] VGA_R_r, VGA_R_w;
 	logic [7:0] VGA_G_r, VGA_G_w;
 	logic [7:0] VGA_B_r, VGA_B_w;
+	logic [3:0] beat;
 
 	assign o_VGA_R = VGA_R_r;
 	assign o_VGA_G = VGA_G_r;
@@ -31,9 +32,18 @@ module Renderer (
 		.i_DATA(log2_data_r),
 		.i_VGA_X(i_VGA_X),
 		.i_VGA_Y(i_VGA_Y),
+		.i_beat({{12{1'b0}},{beat}}),
 		.o_VGA_R(VGA_R_w),
 		.o_VGA_G(VGA_G_w),
 		.o_VGA_B(VGA_B_w)
+	);
+
+	BeatDetection beatdection0(
+		.i_clk(~i_VGA_lock),
+		.i_rst(i_rst),
+		// .i_frame_clk(i_VGA_lock),
+		.i_data(log2_data_r[2:0]),
+		.o_beat(beat)
 	);
 
 always_comb begin

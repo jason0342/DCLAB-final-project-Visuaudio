@@ -38,7 +38,10 @@ module top(
 	output o_VGA_CLK,
 	output[7:0] o_VGA_R,
 	output[7:0] o_VGA_G,
-	output[7:0] o_VGA_B
+	output[7:0] o_VGA_B,
+
+	output[15:0] o_pdata,
+	output o_doneDSP
 
 );
 
@@ -82,6 +85,9 @@ module top(
 	assign set_gain = gain_r[band_r];
 	assign reset_dsp = (state_r == S_RESET_DSP);
 	assign o_VGA_VS = VGA_VS;
+
+	assign o_pdata = p_data;
+	assign o_doneDSP = doneDSP;
 	// assign SRAM_CE_N = 0;
 	// assign SRAM_UB_N = 0;
 	// assign SRAM_LB_N = 0;

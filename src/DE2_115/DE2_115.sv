@@ -123,7 +123,7 @@ module DE2_115(
 	input FL_RY,
 	output FL_WE_N,
 	output FL_WP_N,
-	inout [35:0] GPIO,
+	output [35:0] GPIO,
 	input HSMC_CLKIN_P1,
 	input HSMC_CLKIN_P2,
 	input HSMC_CLKIN0,
@@ -147,6 +147,10 @@ module DE2_115(
 	// logic[2:0] playState0;
 	logic clk_100k;
 	logic clk_25M;
+
+	assign GPIO[0] = AUD_BCLK;
+	assign GPIO[1] = clk_25M;
+	assign GPIO[2] = SW[0];
 
 	pll altpll0(
 		.altpll_0_c0_clk(AUD_XCK), // 12MHz
@@ -236,7 +240,9 @@ module DE2_115(
 		.o_VGA_CLK(VGA_CLK),
 		.o_VGA_R(VGA_R),
 		.o_VGA_G(VGA_G),
-		.o_VGA_B(VGA_B)
+		.o_VGA_B(VGA_B),
+		.o_pdata(GPIO[18:3]),
+		.o_doneDSP(GPIO[19])
 	);
 	
 endmodule

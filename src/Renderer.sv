@@ -38,8 +38,9 @@ module Renderer (
 		.o_VGA_B(VGA_B_w)
 	);
 
-	Visualize vis(
+	BubbleRenderer bubble0(
 		.i_clk(i_clk2),
+		.i_rst(i_rst),
 		.i_VGA_X(i_VGA_X),
 		.i_VGA_Y(i_VGA_Y),
 		.o_VGA_R(VGA_R_w),

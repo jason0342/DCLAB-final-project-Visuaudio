@@ -1,12 +1,12 @@
 module Visualize (
-	input clk,
-	input rst,
+	input i_clk,
+	input i_rst,
 	input [10:0] i_VGA_X,
 	input [10:0] i_VGA_Y,
 
 	output [7:0] o_VGA_R,
 	output [7:0] o_VGA_G, 
-	output [7:0] o_VGA_B,
+	output [7:0] o_VGA_B
 	
 );
 
@@ -158,7 +158,7 @@ module Visualize (
 	end
 
 always_ff @(posedge i_clk or posedge i_rst) begin
-	if(rst) begin
+	if(i_rst) begin
 		count_r <= '0;
 		random_r <= '0;
 		CENTER_X_r <= '0;

@@ -38,6 +38,15 @@ module Renderer (
 		.o_VGA_B(VGA_B_w)
 	);
 
+	Visualize vis(
+		.i_clk(i_clk2),
+		.i_VGA_X(i_VGA_X),
+		.i_VGA_Y(i_VGA_Y),
+		.o_VGA_R(VGA_R_w),
+		.o_VGA_G(VGA_G_w),
+		.o_VGA_B(VGA_B_w)
+	);
+
 	BeatDetection beatdection0(
 		.i_clk(~i_VGA_lock),
 		.i_rst(i_rst),

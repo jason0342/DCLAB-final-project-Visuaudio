@@ -3,6 +3,7 @@ module Renderer (
 	input i_clk2,
 	input i_rst,
 	input i_switch2,
+	input i_switch3,
 	input [15:0][15:0] i_fft_data,
 	input i_fft_done,
 	input [10:0] i_VGA_X,
@@ -38,7 +39,7 @@ module Renderer (
 		.i_DATA(log2_data_r),
 		.i_VGA_X(i_VGA_X),
 		.i_VGA_Y(i_VGA_Y),
-		.i_beat({{12{1'b0}},{beat}}),
+		.i_beat((i_switch3)?{{12{1'b0}},{beat}}:'0),
 		.o_VGA_R(SPEC_R),
 		.o_VGA_G(SPEC_G),
 		.o_VGA_B(SPEC_B)
@@ -48,7 +49,7 @@ module Renderer (
 		.i_clk(i_clk2),
 		.i_rst(i_rst),
 		.i_DATA(log2_data_r),
-		.i_radius_off(radius_off),
+		.i_radius_off((i_switch3)?radius_off:'0),
 		.i_VGA_X(i_VGA_X),
 		.i_VGA_Y(i_VGA_Y),
 		.o_VGA_R(CIRCLE_R),
@@ -60,7 +61,7 @@ module Renderer (
 		.i_clk(~i_VGA_lock),
 		.i_rst(i_rst),
 		// .i_frame_clk(i_VGA_lock),
-		.i_data(log2_data_r[2:0]),
+		.i_data(log2_data_r),
 		.o_beat(beat),
 		.o_radius(radius_off)
 	);

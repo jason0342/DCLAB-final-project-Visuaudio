@@ -8,7 +8,7 @@ module FFTcontroller (
 	output[1:0] o_fft_error
 );
 	
-	parameter fft_length = 2048;
+	parameter fft_length = 1024;
 
 	enum{ S_WAIT, S_SEND } state_r, state_w;
 
@@ -89,22 +89,23 @@ always_comb begin
 		// 	sample_count_w = sample_count_r + 1;
 		// end
 		case(src_count_r)
-			3:    begin odat_w[0] = src_data[41:26]; end
-			5:    begin odat_w[1] = src_data[41:26]; end
-			7:    begin odat_w[2] = src_data[41:26]; end
-			10:   begin odat_w[3] = src_data[41:26]; end
-			15:   begin odat_w[4] = src_data[41:26]; end
-			22:   begin odat_w[5] = src_data[41:26]; end
-			31:   begin odat_w[6] = src_data[41:26]; end
-			44:   begin odat_w[7] = src_data[41:26]; end
-			65:   begin odat_w[8] = src_data[41:26]; end
-			91:   begin odat_w[9] = src_data[41:26]; end
-			127:  begin odat_w[10] = src_data[41:26]; end
-			180:  begin odat_w[11] = src_data[41:26]; end
-			255:  begin odat_w[12] = src_data[41:26]; end
-			360:  begin odat_w[13] = src_data[41:26]; end
-			511:  begin odat_w[14] = src_data[41:26]; end
-			722:  begin odat_w[15] = src_data[41:26]; end
+			2:    begin odat_w[0] = src_data[41:26]; end
+			3:    begin odat_w[1] = src_data[41:26]; end
+			5:    begin odat_w[2] = src_data[41:26]; end
+			7:    begin odat_w[3] = src_data[41:26]; end
+			10:   begin odat_w[4] = src_data[41:26]; end
+			15:   begin odat_w[5] = src_data[41:26]; end
+			22:   begin odat_w[6] = src_data[41:26]; end
+			31:   begin odat_w[7] = src_data[41:26]; end
+			44:   begin odat_w[8] = src_data[41:26]; end
+			65:   begin odat_w[9] = src_data[41:26]; end
+			91:   begin odat_w[10] = src_data[41:26]; end
+			127:  begin odat_w[11] = src_data[41:26]; end
+			180:  begin odat_w[12] = src_data[41:26]; end
+			255:  begin odat_w[13] = src_data[41:26]; end
+			360:  begin odat_w[14] = src_data[41:26]; end
+			511:  begin odat_w[15] = src_data[41:26]; end
+			// 722:  
 			// 1023: begin end
 			default: begin end
 		endcase

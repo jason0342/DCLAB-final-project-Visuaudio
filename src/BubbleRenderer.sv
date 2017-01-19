@@ -13,8 +13,9 @@ module BubbleRenderer (
 );
 
 	parameter PERIOD = 10000000;
-	parameter CIRNUM = 48;
-	parameter RAND_BIT = 25;
+	parameter CIRNUM = 28;
+	parameter RAND_BIT = 33;
+	parameter MIN_RADIUS = 45;
 
 	assign o_VGA_R = CIRCLE_R;
 	assign o_VGA_G = CIRCLE_G;
@@ -45,6 +46,8 @@ module BubbleRenderer (
 	logic [CIRNUM-1:0][2:0] transList;
 	logic [7:0] CIRCLE_R, CIRCLE_G, CIRCLE_B;
 	logic [31:0] intensity;
+	logic [31:0] tmp0;
+	assign tmp0 = (int'(random_r[9:0]) * 640) >> 10;
 
 	Random #(.BIT(RAND_BIT)) rand_gen(
 		.i_clk(i_clk),
@@ -103,7 +106,7 @@ always_comb begin
 				i_DATA[8] + i_DATA[9] + i_DATA[10] + i_DATA[11] + i_DATA[12] + i_DATA[13] + i_DATA[14] + i_DATA[15];
 
 	// Update circles
-	if((count_r[20:0] == 0) && (intensity > random_r[7:0])) begin
+	if((count_r[20:0] == 0) && (intensity > random_r[33:26])) begin
 		// Shift register and create new circle
 		CENTER_X_w = {CENTER_X_r[CIRNUM-2:0], nextX_r};
 		CENTER_Y_w = {CENTER_Y_r[CIRNUM-2:0], nextY_r};
@@ -124,26 +127,62 @@ always_comb begin
 		end else begin
 			nextY_w = random_r[18:10];
 		end
+		// if(random_r[17:10] + random_r[25:18] >= 480) begin
+		// 	nextY_w = random_r[17:10] + random_r[25:18] - 256;
+		// end else begin
+		// 	nextY_w = random_r[17:10] + random_r[25:18];
+		// end
 
-		nextRAD_w = 45 + random_r[25:19];
+
+		// nextRAD_w = 45 + random_r[25:19];
 
 		if(nextX_w < 160) begin
+			nextRAD_w = MIN_RADIUS + (i_DATA[1] << 2) + random_r[23:19];
 			nextR_w = 255;
 			nextG_w = (51 * nextX_w) >> 5;
 			nextB_w = '0;
 		end else if(nextX_w < 320) begin
+			nextRAD_w = MIN_RADIUS + (i_DATA[5] << 2) + random_r[23:19];
 			nextR_w = (51 * (319 - nextX_w)) >> 5;
 			nextG_w = 255;
 			nextB_w = '0;
 		end else if(nextX_w < 480) begin
+			nextRAD_w = MIN_RADIUS + (i_DATA[9] << 2) + random_r[23:19];
 			nextR_w = '0;
 			nextG_w = 255;
 			nextB_w = (51 * (nextX_w - 320)) >> 5;
 		end else begin
+			nextRAD_w = MIN_RADIUS + (i_DATA[13] << 2) + random_r[23:19];
 			nextR_w = '0;
 			nextG_w = (51 * (639 - nextX_w)) >> 5;
 			nextB_w = 255;
 		end
+
+
+		// nextX_w = tmp0;
+		// if(random_r[17:10] + random_r[25:18] >= 480) begin
+		// 	nextY_w = random_r[17:10] + random_r[25:18] - 256;
+		// end else begin
+		// 	nextY_w = random_r[17:10] + random_r[25:18];
+		// end
+
+		// if(nextX_w < 220) begin
+		// 	nextRAD_w = (i_DATA[2] << 3) + random_r[24:19];
+		// 	nextR_w = 255;
+		// 	nextG_w = '0;
+		// 	nextB_w = '0;
+		// end else if(nextX_w < 420) begin
+		// 	nextRAD_w = (i_DATA[9] << 3) + random_r[24:19];
+		// 	nextR_w = '0;
+		// 	nextG_w = 255;
+		// 	nextB_w = '0;
+		// end else begin
+		// 	nextRAD_w = (i_DATA[13] << 3) + random_r[24:19];
+		// 	nextR_w = '0;
+		// 	nextG_w = '0;
+		// 	nextB_w = 255;
+		// end
+
 	end
 end
 

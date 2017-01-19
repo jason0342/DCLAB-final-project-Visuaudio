@@ -61,7 +61,7 @@ module Renderer (
 		.i_rst(i_rst),
 		// .i_frame_clk(i_VGA_lock),
 		.i_data(log2_data_r[2:0]),
-		.o_beat(beat),
+		.o_beat(beat)
 		.o_radius(radius_off)
 	);
 

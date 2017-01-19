@@ -11,6 +11,7 @@ module top(
 	input i_clk3, //25Mhz
 	input i_rst, //SW00?
 	input i_switch, // enable signal
+	input i_switch2,
 
 	inout I2C_SDAT,
 	// inout [15:0] SRAM_DQ,
@@ -164,6 +165,7 @@ module top(
 		.i_clk(i_clk),
 		.i_clk2(i_clk3),
 		.i_rst(i_rst),
+		.i_switch2(i_switch2),
 		.i_fft_data(fft_data2),
 		.i_fft_done(fft_done),
 		.i_VGA_X(VGA_X),

@@ -215,6 +215,7 @@ module DE2_115(
 		.i_clk3(clk_25M),
 		.i_rst(SW[0]),
 		.i_switch(SW[1]),
+		.i_switch2(SW[2]),
 		.I2C_SDAT(I2C_SDAT),
 		// .SRAM_DQ(SRAM_DQ),
 		.I2C_SCLK(I2C_SCLK),

@@ -1,6 +1,7 @@
 module BubbleRenderer (
 	input i_clk,
 	input i_rst,
+	input [15:0][3:0] i_DATA,
 	input [10:0] i_VGA_X,
 	input [10:0] i_VGA_Y,
 	input [4:0] i_radius_off,
@@ -12,7 +13,7 @@ module BubbleRenderer (
 );
 
 	parameter PERIOD = 10000000;
-	parameter CIRNUM = 32;
+	parameter CIRNUM = 48;
 	parameter RAND_BIT = 25;
 
 	assign o_VGA_R = CIRCLE_R;
@@ -43,6 +44,7 @@ module BubbleRenderer (
 	logic [CIRNUM-1:0] enableList_r, enableList_w;
 	logic [CIRNUM-1:0][2:0] transList;
 	logic [7:0] CIRCLE_R, CIRCLE_G, CIRCLE_B;
+	logic [31:0] intensity;
 
 	Random #(.BIT(RAND_BIT)) rand_gen(
 		.i_clk(i_clk),
@@ -80,9 +82,10 @@ always_comb begin
 
 	// Calculations
 	for (int i = 0; i < CIRNUM; i++) begin
-		int distance;
-		distance = (i_VGA_X  + 1 - CENTER_X_r[i]) ** 2 + (i_VGA_Y - CENTER_Y_r[i]) ** 2;
-		if(distance <= (RADIUS_r[i] ) ** 2) enableList_w[i] = 1;
+		// int distance;
+		// distance = (i_VGA_X  + 1 - CENTER_X_r[i]) ** 2 + (i_VGA_Y - CENTER_Y_r[i]) ** 2;
+		if(((i_VGA_X  + 1 - CENTER_X_r[i]) ** 2 + (i_VGA_Y - CENTER_Y_r[i]) ** 2)
+			<= (RADIUS_r[i] + i_radius_off) ** 2) enableList_w[i] = 1;
 		transList[i][1:0] = decay_r[i][7:6];
 	end
 
@@ -96,8 +99,11 @@ always_comb begin
 		end
 	end
 
+	intensity = i_DATA[0] + i_DATA[1] + i_DATA[2] + i_DATA[3] + i_DATA[4] + i_DATA[5] + i_DATA[6] + i_DATA[7] +
+				i_DATA[8] + i_DATA[9] + i_DATA[10] + i_DATA[11] + i_DATA[12] + i_DATA[13] + i_DATA[14] + i_DATA[15];
+
 	// Update circles
-	if(count_r[21:0] == 0) begin
+	if((count_r[20:0] == 0) && (intensity > random_r[7:0])) begin
 		// Shift register and create new circle
 		CENTER_X_w = {CENTER_X_r[CIRNUM-2:0], nextX_r};
 		CENTER_Y_w = {CENTER_Y_r[CIRNUM-2:0], nextY_r};
